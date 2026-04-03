@@ -1,26 +1,62 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-jakarta);
+  --color-cream: #F4EFE6;
+  --color-paper: #FFFCF8;
+  --color-ink: #1C1512;
+  --color-ink-2: #44403C;
+  --color-ink-3: #6B635C;
+  --color-ink-4: #A8A29E;
+  --color-border: #E5DDD3;
+  --color-border-2: #EDE9E3;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  scroll-behavior: smooth;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-jakarta), system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  background-color: #F4EFE6;
+}
+
+/* Animated ping for at-risk health dots */
+@keyframes health-ping {
+  0%   { transform: scale(1); opacity: 0.75; }
+  70%  { transform: scale(2.4); opacity: 0; }
+  100% { transform: scale(2.4); opacity: 0; }
+}
+
+.health-ping {
+  animation: health-ping 2s ease-out infinite;
+}
+
+/* Progress bar shimmer overlay */
+@keyframes shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.progress-shimmer {
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255,255,255,0.32) 50%,
+    transparent 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 2.4s ease-in-out infinite;
+}
+
+/* Card hover lift */
+.project-card {
+  transition: transform 180ms ease, box-shadow 180ms ease;
+}
+.project-card:hover {
+  transform: translateY(-3px);
+  box-shadow:
+    0 12px 32px -6px rgba(28,21,18,0.12),
+    0 4px 12px -2px rgba(28,21,18,0.07);
 }

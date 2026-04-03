@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>项目卡片预览</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  * { font-family: 'Plus Jakarta Sans', sans-serif; }
+  body { background: #F4EFE6; }
+
+  @keyframes health-ping {
+    0%   { transform: scale(1); opacity: 0.75; }
+    70%  { transform: scale(2.4); opacity: 0; }
+    100% { transform: scale(2.4); opacity: 0; }
+  }
+  .health-ping { animation: health-ping 2s ease-out infinite; }
+
+  @keyframes shimmer {
+    0%   { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+  }
+  .progress-shimmer {
+    background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.32) 50%, transparent 100%);
+    background-size: 200% 100%;
+    animation: shimmer 2.4s ease-in-out infinite;
+  }
+  .card-hover { transition: transform 180ms ease, box-shadow 180ms ease; }
+  .card-hover:hover { transform: translateY(-3px); box-shadow: 0 12px 32px -6px rgba(28,21,18,0.12), 0 4px 12px -2px rgba(28,21,18,0.07); }
+  .card-hover:hover .action-btns { opacity: 1; }
+  .action-btns { opacity: 0; transition: opacity 150ms; }
+  .task-item:hover .task-check { border-color: #d97706; }
+</style>
+</head>
+<body class="min-h-screen p-8">
+
+<div class="max-w-5xl mx-auto">
+  <p class="text-xs font-semibold uppercase tracking-widest text-[#A8A29E] mb-6">项目卡片设计预览 · 鼠标悬停查看交互</p>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+
+    <!-- ═══════════════════════════════════════════
+         卡片 A：当前设计（对照组）
+    ════════════════════════════════════════════ -->
+    <div>
+      <p class="text-[11px] font-bold uppercase tracking-widest text-[#C7BFB5] mb-2 flex items-center gap-2">
+        <span class="px-2 py-0.5 bg-[#E5DDD3] rounded text-[#6B635C]">当前</span> 现有设计
+      </p>
+      <div class="card-hover flex flex-col rounded-2xl bg-[#FFFCF8] shadow-sm ring-1 ring-[#E5DDD3]">
+
+        <!-- Header -->
+        <div class="flex items-start justify-between gap-3 px-5 pt-4 pb-3">
+          <div class="flex items-start gap-2.5">
+            <div class="relative mt-[3px] flex h-3.5 w-3.5 shrink-0 items-center justify-center">
+              <span class="absolute h-full w-full rounded-full bg-amber-300 health-ping"></span>
+              <span class="relative h-2.5 w-2.5 rounded-full bg-amber-400 shadow-sm"></span>
+            </div>
+            <h3 class="text-[15px] font-semibold leading-snug text-[#1C1512]">新任管理者发展项目</h3>
+          </div>
+          <span class="shrink-0 rounded-full px-2.5 py-0.5 text-[11px] font-semibold ring-1 bg-amber-50 ring-amber-200/70 text-amber-700">有风险</span>
+        </div>
+
+        <!-- Body -->
+        <div class="flex flex-col gap-3 px-5 pb-3">
+          <p class="text-xs leading-relaxed text-[#A8A29E] line-clamp-2">面向新晋升管理者的6个月系统化赋能培养项目</p>
+          <div class="flex flex-wrap gap-x-4 gap-y-1.5">
+            <span class="flex items-center gap-1.5 text-xs text-[#6B635C]">👤 李明</span>
+            <span class="flex items-center gap-1.5 text-xs font-medium text-amber-600">📅 23天后截止</span>
+          </div>
+          <!-- 阶段步进 -->
+          <div class="flex items-center gap-1.5">
+            <div class="h-1.5 w-3 rounded-full bg-[#C7BFB5]"></div>
+            <div class="h-1.5 w-7 rounded-full bg-blue-400"></div>
+            <div class="h-1.5 w-3 rounded-full bg-[#EDE9E3]"></div>
+            <div class="h-1.5 w-3 rounded-full bg-[#EDE9E3]"></div>
+            <span class="ml-1 rounded-full bg-blue-50 px-2 py-0.5 text-[11px] font-medium text-blue-700 ring-1 ring-blue-200/60">方案设计</span>
+            <span class="ml-auto text-[11px] text-[#C7BFB5]">2/4</span>
+          </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="mt-auto border-t border-[#EDE9E3] px-5 pb-4 pt-3 space-y-3">
+          <!-- 进度条 - 当前设计（歧义点） -->
+          <div>
+            <div class="mb-1.5 flex items-center justify-between">
+              <span class="text-[11px] font-medium uppercase tracking-wide text-[#A8A29E]">完成进度</span>
+              <span class="text-xs font-bold text-[#1C1512]">55%</span>
+            </div>
+            <div class="relative h-1.5 w-full overflow-hidden rounded-full bg-[#EDE9E3]">
+              <div class="h-full w-[55%] rounded-full bg-blue-400"></div>
+              <div class="absolute inset-y-0 left-0 w-[55%] rounded-full progress-shimmer"></div>
+            </div>
+            <!-- 歧义标注 -->
+            <p class="mt-1 text-[10px] text-rose-400">⚠ 用户不清楚：这是整体进度还是当前阶段进度？</p>
+          </div>
+          <!-- 里程碑 -->
+          <div class="flex items-start gap-2.5 rounded-xl bg-[#F4EFE6] px-3 py-2.5">
+            <span class="mt-0.5 text-[#A8A29E]">→</span>
+            <div>
+              <p class="text-xs font-medium text-[#44403C]">课程体系方案评审</p>
+              <p class="mt-0.5 text-[11px] text-[#A8A29E]">截止 4月12日</p>
+            </div>
+          </div>
+          <!-- 操作按钮 -->
+          <div class="action-btns flex gap-2 pt-0.5">
+            <button class="flex flex-1 items-center justify-center gap-1.5 rounded-xl border border-[#E5DDD3] bg-[#F4EFE6] py-2 text-xs font-semibold text-[#44403C] hover:bg-amber-50 hover:border-amber-300 hover:text-amber-800">✏ 编辑</button>
+            <button class="flex flex-1 items-center justify-center gap-1.5 rounded-xl border border-[#E5DDD3] bg-[#F4EFE6] py-2 text-xs font-semibold text-[#44403C] hover:bg-rose-50 hover:border-rose-300 hover:text-rose-700">🗑 删除</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════
+         卡片 B：优化设计（方案）
+    ════════════════════════════════════════════ -->
+    <div>
+      <p class="text-[11px] font-bold uppercase tracking-widest text-[#C7BFB5] mb-2 flex items-center gap-2">
+        <span class="px-2 py-0.5 bg-amber-100 rounded text-amber-700">优化</span> 新设计方案
+      </p>
+      <div class="card-hover flex flex-col rounded-2xl bg-[#FFFCF8] shadow-sm ring-1 ring-[#E5DDD3]">
+
+        <!-- Header -->
+        <div class="flex items-start justify-between gap-3 px-5 pt-4 pb-3">
+          <div class="flex items-start gap-2.5">
+            <div class="relative mt-[3px] flex h-3.5 w-3.5 shrink-0 items-center justify-center">
+              <span class="absolute h-full w-full rounded-full bg-amber-300 health-ping"></span>
+              <span class="relative h-2.5 w-2.5 rounded-full bg-amber-400 shadow-sm"></span>
+            </div>
+            <h3 class="text-[15px] font-semibold leading-snug text-[#1C1512]">新任管理者发展项目</h3>
+          </div>
+          <span class="shrink-0 rounded-full px-2.5 py-0.5 text-[11px] font-semibold ring-1 bg-amber-50 ring-amber-200/70 text-amber-700">有风险</span>
+        </div>
+
+        <!-- Body -->
+        <div class="flex flex-col gap-3 px-5 pb-3">
+          <p class="text-xs leading-relaxed text-[#A8A29E] line-clamp-2">面向新晋升管理者的6个月系统化赋能培养项目</p>
+          <div class="flex flex-wrap gap-x-4 gap-y-1.5">
+            <span class="flex items-center gap-1.5 text-xs text-[#6B635C]">👤 李明</span>
+            <span class="flex items-center gap-1.5 text-xs font-medium text-amber-600">📅 23天后截止</span>
+          </div>
+          <!-- 阶段步进 -->
+          <div class="flex items-center gap-1.5">
+            <div class="h-1.5 w-3 rounded-full bg-[#C7BFB5]"></div>
+            <div class="h-1.5 w-7 rounded-full bg-blue-400"></div>
+            <div class="h-1.5 w-3 rounded-full bg-[#EDE9E3]"></div>
+            <div class="h-1.5 w-3 rounded-full bg-[#EDE9E3]"></div>
+            <span class="ml-1 rounded-full bg-blue-50 px-2 py-0.5 text-[11px] font-medium text-blue-700 ring-1 ring-blue-200/60">方案设计</span>
+            <span class="ml-auto text-[11px] text-[#C7BFB5]">2/4</span>
+          </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="mt-auto border-t border-[#EDE9E3] px-5 pb-4 pt-3 space-y-3">
+
+          <!-- ① 方案 B：· 分隔 -->
+          <div>
+            <p class="text-[10px] font-bold uppercase tracking-widest text-[#C7BFB5] mb-2">方案 B</p>
+            <div class="mb-1.5 flex items-center justify-between">
+              <span class="text-[11px] font-medium text-[#A8A29E]">整体进度 · 手动填报</span>
+              <span class="text-xs font-bold text-[#1C1512]">55%</span>
+            </div>
+            <div class="relative h-1.5 w-full overflow-hidden rounded-full bg-[#EDE9E3]">
+              <div class="h-full w-[55%] rounded-full bg-blue-400"></div>
+              <div class="absolute inset-y-0 left-0 w-[55%] rounded-full progress-shimmer"></div>
+            </div>
+          </div>
+
+          <!-- 方案 D：进度条下方小字 -->
+          <div>
+            <p class="text-[10px] font-bold uppercase tracking-widest text-[#C7BFB5] mb-2">方案 D</p>
+            <div class="mb-1.5 flex items-center justify-between">
+              <span class="text-[11px] font-medium text-[#A8A29E]">整体进度</span>
+              <span class="text-xs font-bold text-[#1C1512]">55%</span>
+            </div>
+            <div class="relative h-1.5 w-full overflow-hidden rounded-full bg-[#EDE9E3]">
+              <div class="h-full w-[55%] rounded-full bg-blue-400"></div>
+              <div class="absolute inset-y-0 left-0 w-[55%] rounded-full progress-shimmer"></div>
+            </div>
+            <p class="mt-1.5 text-right text-[10px] text-[#C7BFB5]">负责人填报 · 最近更新：3天前</p>
+          </div>
+
+          <!-- ② 当前阶段子任务（可选，有就显示） -->
+          <div class="rounded-xl bg-[#F4EFE6] px-3 py-2.5 space-y-2">
+            <p class="text-[11px] font-semibold text-[#6B635C] flex items-center justify-between">
+              <span>方案设计阶段任务</span>
+              <span class="text-[#A8A29E] font-normal">1/3 完成</span>
+            </p>
+            <!-- 已完成任务 -->
+            <label class="task-item flex items-center gap-2 cursor-pointer group">
+              <div class="task-check flex h-4 w-4 shrink-0 items-center justify-center rounded border-2 border-emerald-400 bg-emerald-400 transition-colors">
+                <svg class="h-2.5 w-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+              </div>
+              <span class="text-xs text-[#A8A29E] line-through">完成需求调研与访谈</span>
+            </label>
+            <!-- 未完成任务 + DDL -->
+            <label class="task-item flex items-center gap-2 cursor-pointer group">
+              <div class="task-check flex h-4 w-4 shrink-0 items-center justify-center rounded border-2 border-[#D5CFC7] bg-white transition-colors">
+              </div>
+              <span class="text-xs text-[#44403C] flex-1">课程体系方案评审</span>
+              <span class="text-[10px] text-amber-600 font-medium">4/12</span>
+            </label>
+            <!-- 未完成任务（无DDL） -->
+            <label class="task-item flex items-center gap-2 cursor-pointer group">
+              <div class="task-check flex h-4 w-4 shrink-0 items-center justify-center rounded border-2 border-[#D5CFC7] bg-white transition-colors">
+              </div>
+              <span class="text-xs text-[#44403C] flex-1">外部讲师资源确认</span>
+              <span class="text-[10px] text-[#C7BFB5]">4/30</span>
+            </label>
+          </div>
+
+          <!-- 操作按钮 -->
+          <div class="action-btns flex gap-2 pt-0.5">
+            <button class="flex flex-1 items-center justify-center gap-1.5 rounded-xl border border-[#E5DDD3] bg-[#F4EFE6] py-2 text-xs font-semibold text-[#44403C] hover:bg-amber-50 hover:border-amber-300 hover:text-amber-800">✏ 编辑</button>
+            <button class="flex flex-1 items-center justify-center gap-1.5 rounded-xl border border-[#E5DDD3] bg-[#F4EFE6] py-2 text-xs font-semibold text-[#44403C] hover:bg-rose-50 hover:border-rose-300 hover:text-rose-700">🗑 删除</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- 说明 -->
+  <div class="mt-8 rounded-2xl bg-[#FFFCF8] ring-1 ring-[#E5DDD3] px-6 py-5 space-y-3">
+    <p class="text-sm font-bold text-[#1C1512]">设计要点说明</p>
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs text-[#6B635C] leading-relaxed">
+      <div>
+        <p class="font-semibold text-[#1C1512] mb-1">① 进度歧义解决</p>
+        <p>进度条前加"负责人填报"标签，用户一眼明白这是主观估算，不是系统自动计算，语义清晰。进度条本身保持手动输入，不强制要求规划完整。</p>
+      </div>
+      <div>
+        <p class="font-semibold text-[#1C1512] mb-1">② 子任务完全可选</p>
+        <p>没有子任务时，显示旧版「下一里程碑」样式。有子任务时，展示当前阶段的任务列表（可直接打勾完成），不跨阶段显示避免信息过载。</p>
+      </div>
+      <div>
+        <p class="font-semibold text-[#1C1512] mb-1">③ 子任务归属当前阶段</p>
+        <p>每个任务绑定到某个阶段（stage_index），卡片只展示「当前阶段」的任务。切换阶段后自动切换展示。</p>
+      </div>
+      <div>
+        <p class="font-semibold text-[#1C1512] mb-1">④ 改动最小</p>
+        <p>milestones 表仅加一列 stage_index（可为 null），向下兼容。进度字段不变，UI 加标签即可。无需新建表。</p>
+      </div>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

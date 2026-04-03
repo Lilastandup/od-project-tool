@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>子任务系统预览</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+    background: #F4EFE6;
+    padding: 32px 24px;
+    min-height: 100vh;
+  }
+
+  h1 { font-size: 12px; font-weight: 700; color: #A8A29E; letter-spacing: .1em; text-transform: uppercase; margin-bottom: 6px; }
+  .subtitle { font-size: 13px; color: #6B635C; margin-bottom: 28px; }
+
+  .layout { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; max-width: 960px; }
+
+  /* ── Drawer shell ── */
+  .drawer {
+    background: #FFFCF8; border-radius: 20px;
+    box-shadow: 0 8px 40px rgba(0,0,0,.10);
+    border: 1px solid #E5DDD3;
+    display: flex; flex-direction: column;
+    max-height: 780px; overflow: hidden;
+  }
+  .drawer-header {
+    padding: 18px 20px 14px; border-bottom: 1px solid #EDE9E3;
+    display: flex; align-items: flex-start; justify-content: space-between;
+    flex-shrink: 0;
+  }
+  .drawer-label { font-size: 10px; font-weight: 700; color: #A8A29E; letter-spacing: .1em; text-transform: uppercase; }
+  .drawer-title { font-size: 15px; font-weight: 700; color: #1C1512; margin-top: 3px; }
+  .drawer-body { padding: 16px 20px; overflow-y: auto; flex: 1; display: flex; flex-direction: column; gap: 18px; }
+  .drawer-footer { padding: 12px 20px 16px; border-top: 1px solid #EDE9E3; display: flex; gap: 8px; flex-shrink: 0; }
+
+  .section-label { font-size: 10px; font-weight: 700; color: #6B635C; letter-spacing: .08em; text-transform: uppercase; margin-bottom: 7px; }
+
+  /* Health */
+  .health-row { display: flex; gap: 6px; }
+  .health-btn {
+    flex: 1; padding: 8px 4px; border-radius: 10px; border: none;
+    font-size: 12px; font-weight: 600; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; gap: 5px;
+  }
+  .dot { width: 7px; height: 7px; border-radius: 50%; }
+  .h-green  { background:#F0FDF4; color:#15803D; box-shadow:0 0 0 1px #86EFAC; }
+  .h-off    { background:#F4EFE6; color:#6B635C; box-shadow:0 0 0 1px #E5DDD3; }
+
+  /* Stage buttons */
+  .stage-btn {
+    display: flex; align-items: center; gap: 10px;
+    padding: 9px 12px; border-radius: 11px; border: none;
+    font-size: 12px; font-weight: 500; cursor: pointer;
+    width: 100%; text-align: left; transition: all .15s;
+    margin-bottom: 5px;
+  }
+  .stage-btn.active { background: #1C1410; color: white; }
+  .stage-btn.done   { background: #F4EFE6; color: #A8A29E; box-shadow: 0 0 0 1px #E5DDD3; }
+  .stage-btn.todo   { background: #F9F7F3; color: #6B635C; box-shadow: 0 0 0 1px #E5DDD3; }
+  .stage-num {
+    width: 20px; height: 20px; border-radius: 50%; flex-shrink: 0;
+    font-size: 10px; font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .stage-btn.active .stage-num { background: rgba(255,255,255,.15); color: white; }
+  .stage-btn.done   .stage-num { background: #E5DDD3; color: #A8A29E; }
+  .stage-btn.todo   .stage-num { background: #E5DDD3; color: #6B635C; }
+  .stage-name { flex: 1; }
+  .stage-meta { display: flex; align-items: center; gap: 6px; margin-left: auto; }
+  .stage-tag { font-size: 10px; }
+  .stage-task-count {
+    font-size: 10px; padding: 1px 7px; border-radius: 99px; font-weight: 600;
+  }
+  .stage-btn.active .stage-task-count { background: rgba(255,255,255,.15); color: rgba(255,255,255,.8); }
+  .stage-btn.done   .stage-task-count { background: #E5DDD3; color: #A8A29E; }
+  .stage-btn.todo   .stage-task-count { background: #EDE9E3; color: #A8A29E; }
+
+  /* Subtask panel */
+  .subtask-panel {
+    border-radius: 12px; border: 1px solid #E5DDD3; overflow: hidden;
+  }
+  .subtask-panel-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 9px 12px; background: #F4EFE6; border-bottom: 1px solid #E5DDD3;
+  }
+  .subtask-panel-title { font-size: 11px; font-weight: 600; color: #6B635C; }
+  .subtask-panel-count { font-size: 11px; color: #A8A29E; }
+
+  .subtask-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 9px 12px; background: white;
+    border-bottom: 1px solid #F4EFE6;
+    transition: background .1s;
+  }
+  .subtask-item:last-child { border-bottom: none; }
+  .subtask-item.completed { background: #FAFAF9; }
+
+  .checkbox {
+    width: 16px; height: 16px; border-radius: 4px; flex-shrink: 0;
+    border: 1.5px solid #D5CFC7; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    background: white; transition: all .15s;
+  }
+  .checkbox.checked { background: #22C55E; border-color: #22C55E; }
+  .checkbox.checked::after { content: '✓'; font-size: 10px; color: white; font-weight: 700; }
+
+  .subtask-content { flex: 1; min-width: 0; }
+  .subtask-title { font-size: 12px; color: #1C1512; font-weight: 500; }
+  .subtask-item.completed .subtask-title { color: #A8A29E; text-decoration: line-through; }
+  .subtask-ddl { font-size: 10px; color: #A8A29E; margin-top: 1px; }
+  .subtask-ddl.overdue { color: #F43F5E; font-weight: 600; }
+  .subtask-del { font-size: 12px; color: #D5CFC7; cursor: pointer; padding: 2px 4px; border-radius: 4px; }
+  .subtask-del:hover { color: #F43F5E; background: #FFF1F2; }
+
+  .subtask-add {
+    display: flex; align-items: center; gap: 8px;
+    padding: 8px 12px; background: #F9F7F3;
+    border-top: 1px solid #EDE9E3;
+  }
+  .subtask-add-input {
+    flex: 1; font-size: 12px; background: transparent; border: none;
+    outline: none; color: #1C1512; font-family: inherit;
+  }
+  .subtask-add-input::placeholder { color: #C7BFB5; }
+  .subtask-add-date {
+    font-size: 11px; color: #C7BFB5; border: none; background: transparent;
+    outline: none; font-family: inherit; cursor: pointer; width: 90px;
+  }
+  .subtask-add-btn {
+    width: 22px; height: 22px; border-radius: 6px; border: 1px solid #E5DDD3;
+    background: #F4EFE6; font-size: 14px; color: #6B635C; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+
+  /* Empty state */
+  .subtask-empty {
+    padding: 16px 12px; text-align: center; background: white;
+    font-size: 12px; color: #C7BFB5;
+  }
+
+  /* Progress */
+  .progress-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+  .progress-val { font-size: 22px; font-weight: 800; color: #1C1512; }
+  .progress-bar-wrap { height: 6px; background: #EDE9E3; border-radius: 99px; overflow: hidden; }
+  .progress-bar { height: 100%; border-radius: 99px; background: linear-gradient(to right, #34D399, #10B981); }
+  .progress-note { font-size: 11px; color: #C7BFB5; margin-top: 5px; }
+
+  /* Buttons */
+  .btn-cancel { flex: 1; padding: 10px; border-radius: 10px; border: 1px solid #E5DDD3; background: #F4EFE6; font-size: 13px; font-weight: 500; color: #6B635C; cursor: pointer; }
+  .btn-save   { flex: 1; padding: 10px; border-radius: 10px; border: none; background: #D97706; font-size: 13px; font-weight: 600; color: white; cursor: pointer; }
+
+  /* Project card */
+  .card {
+    background: #FFFCF8; border-radius: 16px;
+    border: 1px solid #E5DDD3; overflow: hidden;
+    box-shadow: 0 2px 12px rgba(0,0,0,.06);
+  }
+  .card-header { padding: 14px 16px 10px; display: flex; align-items: flex-start; justify-content: space-between; }
+  .card-dot-wrap { position: relative; width: 14px; height: 14px; flex-shrink: 0; margin-top: 2px; }
+  .card-dot { width: 10px; height: 10px; border-radius: 50%; background: #22C55E; position: absolute; top: 2px; left: 2px; }
+  .card-name { font-size: 14px; font-weight: 600; color: #1C1512; margin-left: 8px; flex: 1; }
+  .card-badge { font-size: 10px; font-weight: 600; padding: 2px 9px; border-radius: 99px; background: #F0FDF4; color: #15803D; box-shadow: 0 0 0 1px #86EFAC80; white-space: nowrap; }
+  .card-body { padding: 0 16px 12px; display: flex; flex-direction: column; gap: 10px; }
+  .card-meta { display: flex; gap: 14px; font-size: 11px; color: #6B635C; }
+  .card-meta span { display: flex; align-items: center; gap: 4px; }
+
+  /* Stage dots */
+  .stage-dots { display: flex; align-items: center; gap: 5px; }
+  .sdot { height: 6px; border-radius: 99px; }
+  .sdot-done { width: 10px; background: #C7BFB5; }
+  .sdot-active { width: 24px; background: #8B5CF6; }
+  .sdot-todo { width: 10px; background: #EDE9E3; }
+  .stage-chip { font-size: 11px; padding: 1px 8px; border-radius: 99px; background: #F4EFE6; color: #6B635C; font-weight: 500; box-shadow: 0 0 0 1px #E5DDD3; }
+  .stage-counter { font-size: 11px; color: #C7BFB5; margin-left: auto; }
+
+  /* Subtask mini list on card */
+  .card-subtasks { background: #F9F7F3; border-radius: 10px; padding: 8px 10px; display: flex; flex-direction: column; gap: 5px; }
+  .card-subtask-row { display: flex; align-items: center; gap: 7px; font-size: 11px; color: #6B635C; }
+  .mini-check { width: 13px; height: 13px; border-radius: 3px; border: 1.5px solid #D5CFC7; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
+  .mini-check.done { background: #22C55E; border-color: #22C55E; font-size: 8px; color: white; }
+  .card-subtask-name { flex: 1; }
+  .card-subtask-name.done { text-decoration: line-through; color: #A8A29E; }
+  .card-subtask-ddl { font-size: 10px; color: #A8A29E; }
+  .card-subtask-more { font-size: 11px; color: #A8A29E; text-align: center; padding-top: 2px; }
+
+  .card-footer { padding: 10px 16px 14px; border-top: 1px solid #EDE9E3; }
+  .card-progress-header { display: flex; justify-content: space-between; margin-bottom: 6px; font-size: 11px; }
+  .card-progress-label { color: #A8A29E; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; }
+  .card-progress-val { font-weight: 700; color: #1C1512; }
+  .card-progress-bar-wrap { height: 5px; background: #EDE9E3; border-radius: 99px; overflow: hidden; }
+  .card-progress-bar { height: 100%; border-radius: 99px; background: linear-gradient(to right, #8B5CF6, #7C3AED); }
+  .card-progress-note { font-size: 10px; color: #C7BFB5; margin-top: 4px; }
+
+  .right-col { display: flex; flex-direction: column; gap: 16px; }
+  .panel-title { font-size: 12px; font-weight: 700; color: #A8A29E; letter-spacing: .08em; text-transform: uppercase; margin-bottom: 10px; }
+
+  .note {
+    padding: 12px 16px; border-radius: 10px;
+    background: #FFFBEB; border: 1px solid #FDE68A;
+    font-size: 12px; color: #92400E; line-height: 1.7;
+  }
+  .note strong { font-weight: 700; }
+</style>
+</head>
+<body>
+
+<h1>子任务系统 · 交互预览</h1>
+<p class="subtitle">左侧：编辑抽屉（当前阶段的子任务列表）· 右侧：项目卡片上的子任务摘要</p>
+
+<div class="layout">
+
+  <!-- ══ LEFT: Edit Drawer ══ -->
+  <div class="drawer">
+    <div class="drawer-header">
+      <div>
+        <div class="drawer-label">编辑项目</div>
+        <div class="drawer-title">绩效体系建设项目</div>
+      </div>
+      <span style="font-size:18px;color:#C7BFB5;cursor:pointer">✕</span>
+    </div>
+
+    <div class="drawer-body">
+
+      <!-- Health -->
+      <div>
+        <div class="section-label">健康状态</div>
+        <div class="health-row">
+          <button class="health-btn h-green"><span class="dot" style="background:#22C55E"></span>正常</button>
+          <button class="health-btn h-off"><span class="dot" style="background:#FBBF24"></span>有风险</button>
+          <button class="health-btn h-off"><span class="dot" style="background:#F43F5E"></span>延期</button>
+        </div>
+      </div>
+
+      <!-- Progress — moved to TOP, before stage/subtasks -->
+      <div style="background:#F9F7F3;border-radius:12px;border:1px solid #E5DDD3;padding:12px 14px;">
+        <div class="progress-header">
+          <div class="section-label" style="margin-bottom:0">整体完成进度</div>
+          <span class="progress-val">35%</span>
+        </div>
+        <input type="range" min="0" max="100" value="35" style="width:100%;accent-color:#D97706;margin-top:6px" />
+        <div style="display:flex;justify-content:space-between;font-size:10px;color:#C7BFB5;margin-top:3px">
+          <span>0%</span><span>25%</span><span>50%</span><span>75%</span><span>100%</span>
+        </div>
+        <p class="progress-note">张雪 填报 · 更新于 2天前</p>
+      </div>
+
+      <!-- Divider with label -->
+      <div style="display:flex;align-items:center;gap:8px">
+        <div style="height:1px;flex:1;background:#EDE9E3"></div>
+        <span style="font-size:10px;color:#C7BFB5;font-weight:600;letter-spacing:.06em">阶段 & 子任务</span>
+        <div style="height:1px;flex:1;background:#EDE9E3"></div>
+      </div>
+
+      <!-- Stage selector with task count badge -->
+      <div>
+        <div class="section-label">当前所处阶段</div>
+
+        <button class="stage-btn done" onclick="selectStage(0)">
+          <span class="stage-num">1</span>
+          <span class="stage-name">现状诊断</span>
+          <div class="stage-meta">
+            <span class="stage-task-count">3/3</span>
+            <span class="stage-tag" style="color:#34D399">✓ 已完成</span>
+          </div>
+        </button>
+
+        <button class="stage-btn active" id="stage-1" onclick="selectStage(1)">
+          <span class="stage-num">2</span>
+          <span class="stage-name">标准设计</span>
+          <div class="stage-meta">
+            <span class="stage-task-count" id="count-badge">1/3</span>
+            <span class="stage-tag" style="color:rgba(255,200,100,.9)">← 当前</span>
+          </div>
+        </button>
+
+        <button class="stage-btn todo" onclick="selectStage(2)">
+          <span class="stage-num">3</span>
+          <span class="stage-name">评审定稿</span>
+          <div class="stage-meta">
+            <span class="stage-task-count">0/0</span>
+          </div>
+        </button>
+
+        <button class="stage-btn todo" onclick="selectStage(3)">
+          <span class="stage-num">4</span>
+          <span class="stage-name">推广落地</span>
+          <div class="stage-meta">
+            <span class="stage-task-count">0/0</span>
+          </div>
+        </button>
+      </div>
+
+      <!-- Subtask panel for current stage -->
+      <div id="subtask-section">
+        <div class="section-label">标准设计 · 子任务</div>
+        <div class="subtask-panel">
+          <div class="subtask-panel-header">
+            <span class="subtask-panel-title">当前阶段子任务</span>
+            <span class="subtask-panel-count" id="subtask-count">已完成 1 / 3</span>
+          </div>
+
+          <div id="subtask-list">
+            <div class="subtask-item completed" id="task-0">
+              <div class="checkbox checked" onclick="toggleTask(0)"></div>
+              <div class="subtask-content">
+                <div class="subtask-title">收集各部门现有评分规则</div>
+                <div class="subtask-ddl">截止 4月5日</div>
+              </div>
+              <span class="subtask-del" onclick="deleteTask(0)">✕</span>
+            </div>
+
+            <div class="subtask-item" id="task-1">
+              <div class="checkbox" onclick="toggleTask(1)"></div>
+              <div class="subtask-content">
+                <div class="subtask-title">设计初版绩效等级框架</div>
+                <div class="subtask-ddl">截止 4月12日</div>
+              </div>
+              <span class="subtask-del" onclick="deleteTask(1)">✕</span>
+            </div>
+
+            <div class="subtask-item" id="task-2">
+              <div class="checkbox" onclick="toggleTask(2)"></div>
+              <div class="subtask-content">
+                <div class="subtask-title">与 HRBP 对齐评分维度</div>
+                <div class="subtask-ddl overdue">已逾期 · 4月1日</div>
+              </div>
+              <span class="subtask-del" onclick="deleteTask(2)">✕</span>
+            </div>
+          </div>
+
+          <div class="subtask-add">
+            <span style="font-size:13px;color:#C7BFB5">＋</span>
+            <input class="subtask-add-input" placeholder="添加子任务…" id="new-task-input"
+              onkeydown="if(event.key==='Enter') addTask()" />
+            <input type="date" class="subtask-add-date" id="new-task-date" title="截止日期（可选）" />
+            <button class="subtask-add-btn" onclick="addTask()">↵</button>
+          </div>
+        </div>
+        <p style="font-size:10px;color:#C7BFB5;margin-top:5px">子任务不影响完成进度，由负责人单独填报</p>
+      </div>
+
+      <!-- Empty state example (hidden) -->
+      <div id="empty-subtask-section" style="display:none">
+        <div class="section-label" id="empty-stage-label">评审定稿 · 子任务</div>
+        <div class="subtask-panel">
+          <div class="subtask-empty">暂无子任务，在下方添加</div>
+          <div class="subtask-add">
+            <span style="font-size:13px;color:#C7BFB5">＋</span>
+            <input class="subtask-add-input" placeholder="添加子任务…" />
+            <input type="date" class="subtask-add-date" title="截止日期（可选）" />
+            <button class="subtask-add-btn">↵</button>
+          </div>
+        </div>
+        <p style="font-size:10px;color:#C7BFB5;margin-top:5px">子任务不影响完成进度，由负责人单独填报</p>
+      </div>
+
+    </div>
+
+    <div class="drawer-footer">
+      <button class="btn-cancel">取消</button>
+      <button class="btn-save">保存修改</button>
+    </div>
+  </div>
+
+  <!-- ══ RIGHT: Card + Notes ══ -->
+  <div class="right-col">
+
+    <div>
+      <div class="panel-title">项目卡片预览</div>
+      <div class="card">
+        <div class="card-header">
+          <div class="card-dot-wrap"><div class="card-dot"></div></div>
+          <span class="card-name">绩效体系建设项目</span>
+          <span class="card-badge">正常</span>
+        </div>
+        <div class="card-body">
+          <div class="card-meta">
+            <span>👤 张雪</span>
+            <span>📅 5月31日截止</span>
+          </div>
+
+          <!-- Stage dots -->
+          <div class="stage-dots">
+            <div class="sdot sdot-done"></div>
+            <div class="sdot sdot-active"></div>
+            <div class="sdot sdot-todo"></div>
+            <div class="sdot sdot-todo"></div>
+            <span class="stage-chip">标准设计</span>
+            <span class="stage-counter">2/4</span>
+          </div>
+
+          <!-- Subtask mini list (current stage only) -->
+          <div class="card-subtasks">
+            <div class="card-subtask-row">
+              <div class="mini-check done">✓</div>
+              <span class="card-subtask-name done">收集各部门现有评分规则</span>
+              <span class="card-subtask-ddl">4/5</span>
+            </div>
+            <div class="card-subtask-row">
+              <div class="mini-check"></div>
+              <span class="card-subtask-name">设计初版绩效等级框架</span>
+              <span class="card-subtask-ddl">4/12</span>
+            </div>
+            <div class="card-subtask-row">
+              <div class="mini-check"></div>
+              <span class="card-subtask-name" style="color:#F43F5E">与 HRBP 对齐评分维度</span>
+              <span class="card-subtask-ddl" style="color:#F43F5E;font-weight:600">逾期</span>
+            </div>
+          </div>
+
+        </div>
+        <div class="card-footer">
+          <div class="card-progress-header">
+            <span class="card-progress-label">完成进度</span>
+            <span class="card-progress-val">35%</span>
+          </div>
+          <div class="card-progress-bar-wrap">
+            <div class="card-progress-bar" style="width:35%"></div>
+          </div>
+          <div class="card-progress-note">张雪 填报 · 更新于 2天前</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Notes -->
+    <div class="note">
+      <strong>设计说明</strong><br>
+      · 子任务绑定所属<strong>阶段下标</strong>，切换阶段后子任务区随之切换<br>
+      · 阶段按钮右侧显示 <strong>已完成/总数</strong> 徽标，一目了然<br>
+      · 逾期子任务标红，已完成划线置灰<br>
+      · 卡片上展示<strong>当前阶段</strong>的子任务摘要（最多3条）<br>
+      · 子任务<strong>不影响</strong>完成进度百分比，进度由负责人单独填报<br>
+      · 删除/修改阶段时，该阶段下的子任务同步删除并弹窗确认
+    </div>
+
+  </div>
+
+</div>
+
+<script>
+  const stages = ['现状诊断', '标准设计', '评审定稿', '推广落地'];
+  let currentStage = 1;
+
+  // Simple task state
+  const tasks = [
+    { id: 0, done: true,  title: '收集各部门现有评分规则', ddl: '截止 4月5日',     overdue: false, deleted: false },
+    { id: 1, done: false, title: '设计初版绩效等级框架',   ddl: '截止 4月12日',    overdue: false, deleted: false },
+    { id: 2, done: false, title: '与 HRBP 对齐评分维度',   ddl: '已逾期 · 4月1日', overdue: true,  deleted: false },
+  ];
+
+  function selectStage(i) {
+    currentStage = i;
+    const btns = document.querySelectorAll('.stage-btn');
+    btns.forEach((b, idx) => {
+      b.className = 'stage-btn ' + (idx < 1 ? 'done' : idx === i ? 'active' : 'todo');
+    });
+    if (i === 1) {
+      document.getElementById('subtask-section').style.display = '';
+      document.getElementById('empty-subtask-section').style.display = 'none';
+    } else {
+      document.getElementById('subtask-section').style.display = 'none';
+      document.getElementById('empty-subtask-section').style.display = '';
+      document.getElementById('empty-stage-label').textContent = stages[i] + ' · 子任务';
+    }
+  }
+
+  function updateCount() {
+    const active = tasks.filter(t => !t.deleted);
+    const done   = active.filter(t => t.done).length;
+    document.getElementById('subtask-count').textContent = `已完成 ${done} / ${active.length}`;
+    document.getElementById('count-badge').textContent = `${done}/${active.length}`;
+  }
+
+  function toggleTask(id) {
+    tasks[id].done = !tasks[id].done;
+    const item = document.getElementById('task-' + id);
+    const cb   = item.querySelector('.checkbox');
+    const title = item.querySelector('.subtask-title');
+    item.classList.toggle('completed', tasks[id].done);
+    cb.classList.toggle('checked', tasks[id].done);
+    title.classList.toggle('done', tasks[id].done);
+    updateCount();
+  }
+
+  function deleteTask(id) {
+    tasks[id].deleted = true;
+    document.getElementById('task-' + id).remove();
+    updateCount();
+  }
+
+  function addTask() {
+    const input = document.getElementById('new-task-input');
+    const dateInput = document.getElementById('new-task-date');
+    const val = input.value.trim();
+    if (!val) return;
+
+    const newId = Date.now();
+    tasks.push({ id: newId, done: false, title: val, ddl: dateInput.value ? '截止 ' + dateInput.value : '', overdue: false, deleted: false });
+
+    const list = document.getElementById('subtask-list');
+    const div = document.createElement('div');
+    div.className = 'subtask-item';
+    div.id = 'task-' + newId;
+    div.innerHTML = `
+      <div class="checkbox" onclick="toggleTask(${newId})"></div>
+      <div class="subtask-content">
+        <div class="subtask-title">${val}</div>
+        ${dateInput.value ? `<div class="subtask-ddl">截止 ${dateInput.value}</div>` : ''}
+      </div>
+      <span class="subtask-del" onclick="deleteTask(${newId})">✕</span>
+    `;
+    list.appendChild(div);
+    input.value = '';
+    dateInput.value = '';
+    updateCount();
+  }
+</script>
+</body>
+</html>

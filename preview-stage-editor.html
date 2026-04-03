@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>阶段编辑器方案预览</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+    background: #F4EFE6;
+    padding: 32px 24px;
+    min-height: 100vh;
+  }
+
+  h1 { font-size: 13px; font-weight: 700; color: #A8A29E; letter-spacing: .1em; text-transform: uppercase; margin-bottom: 24px; }
+
+  .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+
+  /* Drawer shell */
+  .drawer {
+    background: #FFFCF8;
+    border-radius: 20px;
+    box-shadow: 0 8px 40px rgba(0,0,0,.1);
+    border: 1px solid #E5DDD3;
+    overflow: hidden;
+  }
+  .drawer-header {
+    padding: 18px 20px 14px;
+    border-bottom: 1px solid #EDE9E3;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+  }
+  .drawer-label { font-size: 10px; font-weight: 700; color: #A8A29E; letter-spacing: .1em; text-transform: uppercase; }
+  .drawer-title { font-size: 15px; font-weight: 700; color: #1C1512; margin-top: 3px; }
+  .close-btn { width: 28px; height: 28px; border-radius: 8px; border: none; background: transparent; cursor: pointer; display: flex; align-items: center; justify-content: center; color: #C7BFB5; font-size: 16px; }
+  .drawer-body { padding: 16px 20px; display: flex; flex-direction: column; gap: 16px; }
+
+  /* Section label */
+  .section-label {
+    font-size: 10px; font-weight: 700; color: #6B635C;
+    letter-spacing: .08em; text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+
+  /* Health buttons */
+  .health-row { display: flex; gap: 6px; }
+  .health-btn {
+    flex: 1; padding: 8px 4px; border-radius: 10px; border: none;
+    font-size: 12px; font-weight: 600; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; gap: 5px;
+  }
+  .health-btn .dot { width: 7px; height: 7px; border-radius: 50%; }
+  .health-green { background: #F0FDF4; color: #15803D; box-shadow: 0 0 0 1px #86EFAC; }
+  .health-yellow { background: #FFFBEB; color: #B45309; box-shadow: 0 0 0 1px #FCD34D; }
+  .health-red { background: #FFF1F2; color: #BE123C; box-shadow: 0 0 0 1px #FDA4AF; }
+  .health-inactive { background: #F4EFE6; color: #6B635C; box-shadow: 0 0 0 1px #E5DDD3; }
+
+  /* Progress */
+  .progress-bar-wrap { height: 6px; background: #EDE9E3; border-radius: 99px; overflow: hidden; }
+  .progress-bar { height: 100%; border-radius: 99px; background: linear-gradient(to right, #34D399, #10B981); }
+  .progress-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+  .progress-val { font-size: 22px; font-weight: 800; color: #1C1512; }
+
+  /* Textarea */
+  .textarea {
+    width: 100%; resize: none; border-radius: 10px; padding: 10px 12px;
+    border: 1px solid #E5DDD3; background: #F9F7F3; font-size: 12px;
+    color: #1C1512; font-family: inherit; outline: none;
+  }
+
+  /* Footer */
+  .drawer-footer { padding: 12px 20px 16px; border-top: 1px solid #EDE9E3; display: flex; gap: 8px; margin-top: auto; }
+  .btn-cancel {
+    flex: 1; padding: 10px; border-radius: 10px; border: 1px solid #E5DDD3;
+    background: #F4EFE6; font-size: 13px; font-weight: 500; color: #6B635C; cursor: pointer;
+  }
+  .btn-save {
+    flex: 1; padding: 10px; border-radius: 10px; border: none;
+    background: #D97706; font-size: 13px; font-weight: 600; color: white; cursor: pointer;
+  }
+
+  /* ── Option A: Collapsible ── */
+  .collapse-trigger {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 12px; border-radius: 10px;
+    border: 1px solid #E5DDD3; background: #F9F7F3; cursor: pointer;
+    transition: background .15s;
+  }
+  .collapse-trigger:hover { background: #F4EFE6; }
+  .collapse-left { display: flex; align-items: center; gap: 8px; }
+  .collapse-icon { font-size: 10px; color: #A8A29E; }
+  .collapse-title { font-size: 12px; font-weight: 600; color: #1C1512; }
+  .collapse-summary { font-size: 11px; color: #A8A29E; margin-top: 1px; }
+  .chevron { font-size: 11px; color: #C7BFB5; transition: transform .2s; }
+  .chevron.open { transform: rotate(180deg); }
+
+  .collapse-body {
+    margin-top: 6px; padding: 12px; border-radius: 10px;
+    border: 1px solid #E5DDD3; background: #F9F7F3;
+  }
+  .stage-row {
+    display: flex; align-items: center; gap: 8px;
+    padding: 7px 10px; border-radius: 8px; border: 1px solid #E5DDD3;
+    background: white; margin-bottom: 5px;
+  }
+  .stage-grip { font-size: 10px; color: #D5CFC7; }
+  .stage-badge {
+    width: 18px; height: 18px; border-radius: 50%; background: #E5DDD3;
+    font-size: 10px; font-weight: 700; color: #6B635C;
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  .stage-name { font-size: 12px; font-weight: 500; color: #1C1512; flex: 1; }
+  .stage-del { font-size: 12px; color: #D5CFC7; cursor: pointer; }
+  .stage-hint { font-size: 10px; color: #C7BFB5; margin: 4px 0 8px; }
+  .stage-add-row { display: flex; gap: 6px; }
+  .stage-add-input {
+    flex: 1; padding: 7px 10px; border-radius: 8px; border: 1px solid #E5DDD3;
+    background: white; font-size: 12px; color: #1C1512; font-family: inherit; outline: none;
+  }
+  .stage-add-btn {
+    padding: 7px 10px; border-radius: 8px; border: 1px solid #E5DDD3;
+    background: #F4EFE6; font-size: 14px; color: #6B635C; cursor: pointer;
+  }
+
+  /* ── Option B: Readonly preview + edit mode ── */
+  .stages-readonly { display: flex; flex-direction: column; gap: 5px; }
+  .stage-readonly-item {
+    display: flex; align-items: center; gap: 8px;
+    padding: 8px 10px; border-radius: 8px; border: 1px solid #EDE9E3;
+    background: #F9F7F3;
+  }
+  .stage-readonly-item.active {
+    border-color: #D97706; background: #FFFBEB;
+  }
+  .stage-readonly-num {
+    width: 18px; height: 18px; border-radius: 50%; background: #E5DDD3;
+    font-size: 10px; font-weight: 700; color: #6B635C;
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  .stage-readonly-item.active .stage-readonly-num { background: #D97706; color: white; }
+  .stage-readonly-name { font-size: 12px; font-weight: 500; color: #44403C; flex: 1; }
+  .stage-readonly-tag { font-size: 10px; color: #D97706; font-weight: 600; }
+  .edit-stages-btn {
+    margin-top: 8px; width: 100%; padding: 7px; border-radius: 8px;
+    border: 1px dashed #D5CFC7; background: transparent; font-size: 12px;
+    color: #A8A29E; cursor: pointer; transition: all .15s; font-family: inherit;
+  }
+  .edit-stages-btn:hover { border-color: #D97706; color: #D97706; background: #FFFBEB; }
+
+  /* ── Option C: Button → Modal ── */
+  .stages-summary-card {
+    padding: 10px 12px; border-radius: 10px; border: 1px solid #E5DDD3;
+    background: #F9F7F3;
+  }
+  .stages-summary-row { display: flex; align-items: center; justify-content: space-between; }
+  .stages-summary-label { font-size: 11px; color: #A8A29E; }
+  .stages-summary-count { font-size: 11px; font-weight: 600; color: #6B635C; }
+  .stages-flow { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; margin-top: 6px; }
+  .stages-chip {
+    font-size: 11px; padding: 2px 8px; border-radius: 99px;
+    background: #EDE9E3; color: #44403C; font-weight: 500;
+  }
+  .stages-chip.active { background: #D97706; color: white; }
+  .stages-arrow { font-size: 10px; color: #C7BFB5; }
+  .open-modal-btn {
+    margin-top: 8px; width: 100%; padding: 8px; border-radius: 8px;
+    border: 1px solid #E5DDD3; background: #F4EFE6; font-size: 12px;
+    font-weight: 600; color: #6B635C; cursor: pointer; transition: all .15s; font-family: inherit;
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+  }
+  .open-modal-btn:hover { background: #EDE9E3; }
+
+  /* Modal overlay */
+  .modal-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,.3); z-index: 100;
+    display: flex; align-items: center; justify-content: center;
+    backdrop-filter: blur(4px);
+  }
+  .modal-box {
+    background: #FFFCF8; border-radius: 16px; padding: 20px;
+    width: 340px; box-shadow: 0 20px 60px rgba(0,0,0,.2);
+    border: 1px solid #E5DDD3;
+  }
+  .modal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+  .modal-title { font-size: 14px; font-weight: 700; color: #1C1512; }
+  .modal-close { font-size: 16px; color: #C7BFB5; cursor: pointer; background: none; border: none; }
+  .modal-footer { display: flex; gap: 8px; margin-top: 14px; }
+  .modal-btn-cancel {
+    flex: 1; padding: 8px; border-radius: 8px; border: 1px solid #E5DDD3;
+    background: #F4EFE6; font-size: 12px; color: #6B635C; cursor: pointer; font-family: inherit;
+  }
+  .modal-btn-ok {
+    flex: 1; padding: 8px; border-radius: 8px; border: none;
+    background: #D97706; font-size: 12px; font-weight: 600; color: white; cursor: pointer; font-family: inherit;
+  }
+
+  /* Option tags */
+  .option-tag {
+    display: inline-block; font-size: 10px; font-weight: 700; letter-spacing: .06em;
+    padding: 3px 10px; border-radius: 99px; margin-bottom: 10px;
+    text-transform: uppercase;
+  }
+  .tag-a { background: #EFF6FF; color: #2563EB; }
+  .tag-b { background: #F0FDF4; color: #16A34A; }
+  .tag-c { background: #FDF4FF; color: #9333EA; }
+
+  .option-title { font-size: 14px; font-weight: 700; color: #1C1512; margin-bottom: 3px; }
+  .option-desc { font-size: 11px; color: #A8A29E; margin-bottom: 12px; line-height: 1.5; }
+
+  .note {
+    margin-top: 24px; padding: 12px 16px; border-radius: 10px;
+    background: #FFFBEB; border: 1px solid #FDE68A;
+    font-size: 12px; color: #92400E; line-height: 1.6;
+  }
+  .note strong { font-weight: 700; }
+</style>
+</head>
+<body>
+
+<h1>项目阶段编辑 · 三方案预览</h1>
+
+<div class="grid">
+
+  <!-- ══ Option A ══ -->
+  <div>
+    <span class="option-tag tag-a">方案 A</span>
+    <div class="option-title">折叠面板 + 摘要预览</div>
+    <div class="option-desc">默认收起，标题明确，摘要一眼可见，需要改才展开</div>
+    <div class="drawer">
+      <div class="drawer-header">
+        <div>
+          <div class="drawer-label">编辑项目</div>
+          <div class="drawer-title">绩效体系建设项目</div>
+        </div>
+        <button class="close-btn">✕</button>
+      </div>
+      <div class="drawer-body">
+
+        <!-- Health -->
+        <div>
+          <div class="section-label">健康状态</div>
+          <div class="health-row">
+            <button class="health-btn health-green"><span class="dot" style="background:#22C55E"></span>正常</button>
+            <button class="health-btn health-inactive"><span class="dot" style="background:#FBBF24"></span>有风险</button>
+            <button class="health-btn health-inactive"><span class="dot" style="background:#F43F5E"></span>延期</button>
+          </div>
+        </div>
+
+        <!-- Stage: COLLAPSED state -->
+        <div>
+          <div class="section-label">项目阶段</div>
+          <div class="collapse-trigger" onclick="toggleA()">
+            <div class="collapse-left">
+              <span style="font-size:14px">📋</span>
+              <div>
+                <div class="collapse-title">修改项目阶段配置</div>
+                <div class="collapse-summary" id="a-summary">4个阶段：现状诊断 → 标准设计 → 评审定稿 → 推广落地</div>
+              </div>
+            </div>
+            <span class="chevron" id="chevron-a">▼</span>
+          </div>
+          <div class="collapse-body" id="collapse-a" style="display:none">
+            <div class="stage-row"><span class="stage-grip">⠿</span><span class="stage-badge">1</span><span class="stage-name">现状诊断</span><span class="stage-del">✕</span></div>
+            <div class="stage-row"><span class="stage-grip">⠿</span><span class="stage-badge">2</span><span class="stage-name">标准设计</span><span class="stage-del">✕</span></div>
+            <div class="stage-row"><span class="stage-grip">⠿</span><span class="stage-badge">3</span><span class="stage-name">评审定稿</span><span class="stage-del">✕</span></div>
+            <div class="stage-row"><span class="stage-grip">⠿</span><span class="stage-badge">4</span><span class="stage-name">推广落地</span><span class="stage-del">✕</span></div>
+            <div class="stage-hint">点击阶段名称可直接修改，拖动 ⠿ 调整顺序</div>
+            <div class="stage-add-row">
+              <input class="stage-add-input" placeholder="输入新阶段名称，回车添加…" />
+              <button class="stage-add-btn">＋</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Current stage -->
+        <div>
+          <div class="section-label">当前所处阶段</div>
+          <div class="stages-readonly">
+            <div class="stage-readonly-item"><span class="stage-readonly-num">1</span><span class="stage-readonly-name">现状诊断</span><span style="font-size:10px;color:#34D399">✓ 已完成</span></div>
+            <div class="stage-readonly-item active"><span class="stage-readonly-num" style="background:#D97706;color:white">2</span><span class="stage-readonly-name" style="color:#1C1512;font-weight:600">标准设计</span><span class="stage-readonly-tag">← 当前</span></div>
+            <div class="stage-readonly-item"><span class="stage-readonly-num">3</span><span class="stage-readonly-name">评审定稿</span></div>
+            <div class="stage-readonly-item"><span class="stage-readonly-num">4</span><span class="stage-readonly-name">推广落地</span></div>
+          </div>
+        </div>
+
+        <!-- Progress -->
+        <div>
+          <div class="progress-header">
+            <div class="section-label" style="margin-bottom:0">完成进度</div>
+            <span class="progress-val">35%</span>
+          </div>
+          <div class="progress-bar-wrap"><div class="progress-bar" style="width:35%"></div></div>
+        </div>
+
+      </div>
+      <div class="drawer-footer">
+        <button class="btn-cancel">取消</button>
+        <button class="btn-save">保存修改</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ Option B ══ -->
+  <div>
+    <span class="option-tag tag-b">方案 B</span>
+    <div class="option-title">只读预览 + 就地切换编辑</div>
+    <div class="option-desc">常态只读，底部"编辑阶段"按钮触发就地展开为可编辑</div>
+    <div class="drawer">
+      <div class="drawer-header">
+        <div>
+          <div class="drawer-label">编辑项目</div>
+          <div class="drawer-title">绩效体系建设项目</div>
+        </div>
+        <button class="close-btn">✕</button>
+      </div>
+      <div class="drawer-body">
+
+        <!-- Health -->
+        <div>
+          <div class="section-label">健康状态</div>
+          <div class="health-row">
+            <button class="health-btn health-green"><span class="dot" style="background:#22C55E"></span>正常</button>
+            <button class="health-btn health-inactive"><span class="dot" style="background:#FBBF24"></span>有风险</button>
+            <button class="health-btn health-inactive"><span class="dot" style="background:#F43F5E"></span>延期</button>
+          </div>
+        </div>
+
+        <!-- Stage B: readonly + edit button toggle -->
+        <div>
+          <div class="section-label">项目阶段</div>
+          <div id="b-readonly">
+            <div class="stages-readonly">
+              <div class="stage-readonly-item"><span class="stage-readonly-num">1</span><span class="stage-readonly-name">现状诊断</span><span style="font-size:10px;color:#34D399">✓ 已完成</span></div>
+              <div class="stage-readonly-item active"><span class="stage-readonly-num" style="background:#D97706;color:white">2</span><span class="stage-readonly-name" style="color:#1C1512;font-weight:600">标准设计</span><span class="stage-readonly-tag">← 当前</span></div>
+              <div class="stage-readonly-item"><span class="stage-readonly-num">3</span><span class="stage-readonly-name">评审定稿</span></div>
+              <div class="stage-readonly-item"><span class="stage-readonly-num">4</span><span class="stage-readonly-name">推广落地</span></div>
+            </div>
+            <button class="edit-stages-btn" onclick="toggleB()">✎ 修改阶段配置</button>
+          </div>
+          <div id="b-edit" style="display:none">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+              <span style="font-size:12px;font-weight:600;color:#1C1512">修改阶段配置</span>
+              <button onclick="toggleB()" style="font-size:11px;color:#D97706;border:none;background:none;cursor:pointer;font-weight:600">完成 ✓</button>
+            </div>
+            <div class="stage-row"><span class="stage-grip">⠿</span><span class="stage-badge">1</span><span class="stage-name">现状诊断</span><span class="stage-del">✕</span></div>
+            <div class="stage-row"><span class="stage-grip">⠿</span><span class="stage-badge">2</span><span class="stage-name">标准设计</span><span class="stage-del">✕</span></div>
+            <div class="stage-row"><span class="stage-grip">⠿</span><span class="stage-badge">3</span><span class="stage-name">评审定稿</span><span class="stage-del">✕</span></div>
+            <div class="stage-row"><span class="stage-grip">⠿</span><span class="stage-badge">4</span><span class="stage-name">推广落地</span><span class="stage-del">✕</span></div>
+            <div class="stage-hint">点击名称修改，拖动 ⠿ 排序</div>
+            <div class="stage-add-row">
+              <input class="stage-add-input" placeholder="输入新阶段名称…" />
+              <button class="stage-add-btn">＋</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Progress -->
+        <div>
+          <div class="progress-header">
+            <div class="section-label" style="margin-bottom:0">完成进度</div>
+            <span class="progress-val">35%</span>
+          </div>
+          <div class="progress-bar-wrap"><div class="progress-bar" style="width:35%"></div></div>
+        </div>
+
+      </div>
+      <div class="drawer-footer">
+        <button class="btn-cancel">取消</button>
+        <button class="btn-save">保存修改</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ Option C ══ -->
+  <div>
+    <span class="option-tag tag-c">方案 C</span>
+    <div class="option-title">摘要卡片 + 独立弹窗</div>
+    <div class="option-desc">Drawer 里只显示摘要卡片，点击按钮弹出专用 Modal 编辑</div>
+    <div class="drawer">
+      <div class="drawer-header">
+        <div>
+          <div class="drawer-label">编辑项目</div>
+          <div class="drawer-title">绩效体系建设项目</div>
+        </div>
+        <button class="close-btn">✕</button>
+      </div>
+      <div class="drawer-body">
+
+        <!-- Health -->
+        <div>
+          <div class="section-label">健康状态</div>
+          <div class="health-row">
+            <button class="health-btn health-green"><span class="dot" style="background:#22C55E"></span>正常</button>
+            <button class="health-btn health-inactive"><span class="dot" style="background:#FBBF24"></span>有风险</button>
+            <button class="health-btn health-inactive"><span class="dot" style="background:#F43F5E"></span>延期</button>
+          </div>
+        </div>
+
+        <!-- Stage C: summary card + modal button -->
+        <div>
+          <div class="section-label">项目阶段</div>
+          <div class="stages-summary-card">
+            <div class="stages-summary-row">
+              <span class="stages-summary-label">共 4 个阶段</span>
+              <span class="stages-summary-count">当前：标准设计（2/4）</span>
+            </div>
+            <div class="stages-flow">
+              <span class="stages-chip">现状诊断</span>
+              <span class="stages-arrow">›</span>
+              <span class="stages-chip active">标准设计</span>
+              <span class="stages-arrow">›</span>
+              <span class="stages-chip">评审定稿</span>
+              <span class="stages-arrow">›</span>
+              <span class="stages-chip">推广落地</span>
+            </div>
+            <button class="open-modal-btn" onclick="openModal()">
+              <span>✎</span> 修改阶段配置
+            </button>
+          </div>
+        </div>
+
+        <!-- Progress -->
+        <div>
+          <div class="progress-header">
+            <div class="section-label" style="margin-bottom:0">完成进度</div>
+            <span class="progress-val">35%</span>
+          </div>
+          <div class="progress-bar-wrap"><div class="progress-bar" style="width:35%"></div></div>
+        </div>
+
+      </div>
+      <div class="drawer-footer">
+        <button class="btn-cancel">取消</button>
+        <button class="btn-save">保存修改</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Modal for Option C -->
+<div class="modal-overlay" id="modal-c" style="display:none" onclick="closeModal(event)">
+  <div class="modal-box" onclick="event.stopPropagation()">
+    <div class="modal-header">
+      <span class="modal-title">修改阶段配置</span>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div style="font-size:11px;color:#A8A29E;margin-bottom:12px">修改后点击「确认」保存，当前所处阶段会自动同步</div>
+    <div class="stage-row"><span class="stage-grip">⠿</span><span class="stage-badge">1</span><span class="stage-name">现状诊断</span><span class="stage-del">✕</span></div>
+    <div class="stage-row"><span class="stage-grip">⠿</span><span class="stage-badge">2</span><span class="stage-name">标准设计</span><span class="stage-del">✕</span></div>
+    <div class="stage-row"><span class="stage-grip">⠿</span><span class="stage-badge">3</span><span class="stage-name">评审定稿</span><span class="stage-del">✕</span></div>
+    <div class="stage-row"><span class="stage-grip">⠿</span><span class="stage-badge">4</span><span class="stage-name">推广落地</span><span class="stage-del">✕</span></div>
+    <div class="stage-hint" style="margin-top:6px">点击名称修改，拖动 ⠿ 排序</div>
+    <div class="stage-add-row" style="margin-top:4px">
+      <input class="stage-add-input" placeholder="输入新阶段名称…" />
+      <button class="stage-add-btn">＋</button>
+    </div>
+    <div class="modal-footer">
+      <button class="modal-btn-cancel" onclick="closeModal()">取消</button>
+      <button class="modal-btn-ok" onclick="closeModal()">确认修改</button>
+    </div>
+  </div>
+</div>
+
+<div class="note">
+  <strong>交互说明（可点击体验）：</strong><br>
+  方案 A — 点击"修改项目阶段配置"栏展开/收起编辑器 ·
+  方案 B — 点击"修改阶段配置"按钮就地切换编辑模式，点"完成"收起 ·
+  方案 C — 点击"修改阶段配置"弹出独立 Modal
+</div>
+
+<script>
+  function toggleA() {
+    const body = document.getElementById('collapse-a');
+    const ch = document.getElementById('chevron-a');
+    const open = body.style.display === 'none';
+    body.style.display = open ? 'block' : 'none';
+    ch.classList.toggle('open', open);
+  }
+
+  function toggleB() {
+    const ro = document.getElementById('b-readonly');
+    const ed = document.getElementById('b-edit');
+    const editing = ed.style.display !== 'none';
+    ro.style.display = editing ? 'block' : 'none';
+    ed.style.display = editing ? 'none' : 'block';
+  }
+
+  function openModal() {
+    document.getElementById('modal-c').style.display = 'flex';
+  }
+  function closeModal(e) {
+    if (!e || e.target === document.getElementById('modal-c')) {
+      document.getElementById('modal-c').style.display = 'none';
+    }
+  }
+</script>
+</body>
+</html>
