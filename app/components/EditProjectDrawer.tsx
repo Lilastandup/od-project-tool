@@ -288,6 +288,7 @@ export default function EditProjectDrawer({ project, onClose, onSave }: Props) {
                               type="date"
                               autoFocus
                               defaultValue={stageDate}
+                              style={{ colorScheme: isActive ? 'dark' : 'light' }}
                               className={`bg-transparent outline-none text-[11px] ${isActive ? 'text-white' : 'text-[#1C1512]'}`}
                               onBlur={(e) => {
                                 const val = e.target.value;
