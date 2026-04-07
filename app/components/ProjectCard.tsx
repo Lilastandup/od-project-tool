@@ -8,6 +8,7 @@ interface Props {
   nextMilestone: Milestone | undefined;
   subtasks:      Subtask[];
   currentUserId?: string;
+  sharedByName?: string;
   onEdit:        () => void;
   onDelete:      () => void;
   onShare?:      () => void;
@@ -112,7 +113,7 @@ function autoHealth(
   return { effective, autoReason };
 }
 
-export default function ProjectCard({ project, nextMilestone, subtasks, currentUserId, onEdit, onDelete, onShare }: Props) {
+export default function ProjectCard({ project, nextMilestone, subtasks, currentUserId, sharedByName, onEdit, onDelete, onShare }: Props) {
   const total     = project.stages.length;
   const idx       = Math.min(project.currentStageIndex, total - 1);
   const barColor  = stageBarColor(idx, total);
@@ -170,7 +171,7 @@ export default function ProjectCard({ project, nextMilestone, subtasks, currentU
           <div className="flex items-center gap-1.5">
             <span className="inline-flex items-center gap-1 rounded-full bg-violet-50 px-2 py-0.5 text-[10px] font-medium text-violet-600 ring-1 ring-violet-200/60">
               <Share2 className="h-2.5 w-2.5" />
-              来自 {project.owner}
+              来自 {sharedByName ?? project.owner}
             </span>
           </div>
         )}

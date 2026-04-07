@@ -328,6 +328,7 @@ export default function DashboardClient({ initialProjects, initialMilestones, us
                 nextMilestone={getNextMilestone(project.id)}
                 subtasks={subtasks.filter((t) => t.projectId === project.id)}
                 currentUserId={user.id}
+                sharedByName={profiles.find((p) => p.id === project.ownerId)?.name}
                 onEdit={() => setEditingProject(project)}
                 onDelete={() => setDeletingProject(project)}
                 onShare={() => setSharingProject(project)}
@@ -364,6 +365,7 @@ export default function DashboardClient({ initialProjects, initialMilestones, us
                       nextMilestone={getNextMilestone(project.id)}
                       subtasks={subtasks.filter((t) => t.projectId === project.id)}
                       currentUserId={user.id}
+                      sharedByName={profiles.find((p) => p.id === project.ownerId)?.name}
                       onEdit={() => setEditingProject(project)}
                       onDelete={() => setDeletingProject(project)}
                       onShare={() => setSharingProject(project)}
