@@ -2,6 +2,7 @@
 
 import { User2, CalendarDays, CircleArrowRight, Pencil, Trash2, Zap, Share2 } from 'lucide-react';
 import type { Project, Milestone, Subtask, HealthStatus } from '../lib/types';
+import { effectiveHealth, autoReason as getAutoReason } from '../lib/health';
 
 interface Props {
   project:       Project;
@@ -60,58 +61,6 @@ function getRelativeTime(isoStr: string): string {
   return new Date(isoStr).toLocaleDateString('zh-CN', { month: 'numeric', day: 'numeric' });
 }
 
-/** 自动健康判定：取用户手选 vs 系统检测中最严重的 */
-function autoHealth(
-  manualHealth: HealthStatus,
-  dueDate: string,
-  currentStageIndex: number,
-  subtasks: Subtask[],
-): { effective: HealthStatus; autoReason: string | null } {
-  const now = new Date();
-  now.setHours(0, 0, 0, 0);
-  const due      = new Date(dueDate);
-  const daysLeft = Math.ceil((due.getTime() - now.getTime()) / 86400000);
-
-  // 项目 DDL 判定
-  let autoLevel: HealthStatus = 'green';
-  let reason: string | null   = null;
-
-  if (daysLeft < 0) {
-    autoLevel = 'red';
-    reason    = `项目已超期 ${Math.abs(daysLeft)} 天`;
-  } else if (daysLeft <= 2) {
-    autoLevel = 'yellow';
-    reason    = `距截止日期仅 ${daysLeft} 天`;
-  }
-
-  // 当前阶段子任务判定（未完成且有 DDL 的）
-  if (autoLevel !== 'red') {
-    const stageTasks = subtasks.filter(
-      (t) => t.stageIndex === currentStageIndex && !t.isCompleted && t.dueDate
-    );
-    for (const t of stageTasks) {
-      const tDue  = new Date(t.dueDate!);
-      const tDays = Math.ceil((tDue.getTime() - now.getTime()) / 86400000);
-      if (tDays < 0) {
-        autoLevel = 'yellow';
-        reason    = `当前阶段有子任务已逾期`;
-        break;
-      } else if (tDays <= 2) {
-        autoLevel = 'yellow';
-        reason    = `当前阶段有子任务即将到期`;
-        break;
-      }
-    }
-  }
-
-  // 取最严重：red > yellow > green
-  const rank: Record<HealthStatus, number> = { green: 0, yellow: 1, red: 2 };
-  const effective = rank[autoLevel] > rank[manualHealth] ? autoLevel : manualHealth;
-  // 系统检测到任何风险信号时都显示原因（无论用户手选等级高低）
-  const autoReason = rank[autoLevel] >= rank['yellow'] ? reason : null;
-
-  return { effective, autoReason };
-}
 
 export default function ProjectCard({ project, nextMilestone, subtasks, currentUserId, sharedByName, onEdit, onDelete, onShare }: Props) {
   const total     = project.stages.length;
@@ -122,13 +71,9 @@ export default function ProjectCard({ project, nextMilestone, subtasks, currentU
   const overdue   = isOverdue(project.dueDate);
   const daysUntil = getDaysUntil(project.dueDate);
 
-  const { effective, autoReason } = autoHealth(
-    project.health,
-    project.dueDate,
-    idx,
-    subtasks,
-  );
-  const health = healthConfig[effective];
+  const effective  = effectiveHealth(project.health, project.dueDate, idx, subtasks);
+  const autoReason = getAutoReason(project.dueDate, idx, subtasks);
+  const health     = healthConfig[effective];
 
   // 判断当前用户是否为项目 owner
   const isOwner = currentUserId && project.ownerId ? currentUserId === project.ownerId : false;

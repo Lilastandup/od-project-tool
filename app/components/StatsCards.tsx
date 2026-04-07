@@ -1,27 +1,32 @@
 import { FolderOpen, ShieldAlert, CalendarClock } from 'lucide-react';
-import type { Project, Milestone } from '../lib/types';
+import type { Project, Subtask } from '../lib/types';
+import { effectiveHealth } from '../lib/health';
 
 interface Props {
   projects: Project[];
-  milestones: Milestone[];
+  subtasks: Subtask[];
 }
 
-export default function StatsCards({ projects, milestones }: Props) {
+export default function StatsCards({ projects, subtasks }: Props) {
   const activeCount = projects.length;
-  const atRiskCount = projects.filter(
-    (p) => p.health === 'yellow' || p.health === 'red'
-  ).length;
+
+  const atRiskCount = projects.filter((p) => {
+    const idx = Math.min(p.currentStageIndex, p.stages.length - 1);
+    const projectSubtasks = subtasks.filter((t) => t.projectId === p.id);
+    const eff = effectiveHealth(p.health, p.dueDate, idx, projectSubtasks);
+    return eff === 'yellow' || eff === 'red';
+  }).length;
 
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   const weekLater = new Date(today);
   weekLater.setDate(today.getDate() + 7);
 
-  const weekMilestones = milestones.filter((m) => {
-    if (m.isCompleted || !m.dueDate) return false;
-    const due = new Date(m.dueDate);
+  const weekSubtaskCount = subtasks.filter((t) => {
+    if (t.isCompleted || !t.dueDate) return false;
+    const due = new Date(t.dueDate);
     return due >= today && due <= weekLater;
-  });
+  }).length;
 
   const cards = [
     {
@@ -47,15 +52,15 @@ export default function StatsCards({ projects, milestones }: Props) {
       valueColor: atRiskCount > 0 ? 'text-amber-700' : 'text-[#1C1512]',
     },
     {
-      label: '本周截止里程碑',
-      value: weekMilestones.length,
+      label: '本周截止子任务',
+      value: weekSubtaskCount,
       unit: '项',
       description: '7天内到期',
       icon: CalendarClock,
       accentTop: 'bg-rose-500',
       iconBg: 'bg-rose-50',
       iconColor: 'text-rose-600',
-      valueColor: weekMilestones.length > 0 ? 'text-rose-700' : 'text-[#1C1512]',
+      valueColor: weekSubtaskCount > 0 ? 'text-rose-700' : 'text-[#1C1512]',
     },
   ];
 

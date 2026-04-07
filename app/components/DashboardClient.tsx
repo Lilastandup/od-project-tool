@@ -266,7 +266,7 @@ export default function DashboardClient({ initialProjects, initialMilestones, us
 
         {/* ── Stats ────────────────────────────────────────────── */}
         <div className="mb-6 sm:mb-8">
-          <StatsCards projects={activeProjects} milestones={milestones} />
+          <StatsCards projects={activeProjects} subtasks={subtasks} />
         </div>
 
         {/* ── Section label + sort ─────────────────────────────── */}
