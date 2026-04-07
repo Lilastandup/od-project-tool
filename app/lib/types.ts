@@ -34,6 +34,7 @@ export interface Project {
   stages: string[];
   /** 当前阶段在 stages 数组中的下标（0-based） */
   currentStageIndex: number;
+  stageDueDates?: string[];
   progress: number;
   dueDate: string;
   description?: string;

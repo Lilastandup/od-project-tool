@@ -17,6 +17,7 @@ export interface UpdateProjectData {
   health?: HealthStatus;
   stages?: string[];
   currentStageIndex?: number;
+  stageDueDates?: string[];
   progress?: number;
   description?: string;
   dueDate?: string;
@@ -48,6 +49,7 @@ export async function updateProject(id: string, data: UpdateProjectData): Promis
   if (data.health             !== undefined) patch.health              = data.health;
   if (data.stages             !== undefined) patch.stages              = data.stages;
   if (data.currentStageIndex  !== undefined) patch.current_stage_index = data.currentStageIndex;
+  if (data.stageDueDates      !== undefined) patch.stage_due_dates     = data.stageDueDates;
   if (data.progress           !== undefined) patch.progress            = data.progress;
   if (data.description        !== undefined) patch.description         = data.description || null;
   if (data.dueDate            !== undefined) patch.due_date            = data.dueDate;

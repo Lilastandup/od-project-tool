@@ -25,11 +25,13 @@ export default function EditProjectDrawer({ project, onClose, onSave }: Props) {
   const [health,            setHealth]            = useState<HealthStatus>('green');
   const [stages,            setStages]            = useState<string[]>([]);
   const [initialStages,     setInitialStages]     = useState<string[]>([]);
+  const [stageDueDates,     setStageDueDates]     = useState<string[]>([]);
   const [currentStageIndex, setCurrentStageIndex] = useState(0);
   const [progress,          setProgress]          = useState(0);
   const [description,       setDescription]       = useState('');
   const [dueDate,           setDueDate]           = useState('');
   const [editingStages,     setEditingStages]     = useState(false);
+  const [editingStageDateIdx, setEditingStageDateIdx] = useState<number | null>(null);
   const [loading,           setLoading]           = useState(false);
   const [subtasks,          setSubtasks]          = useState<Subtask[]>([]);
 
@@ -45,6 +47,7 @@ export default function EditProjectDrawer({ project, onClose, onSave }: Props) {
       setHealth(project.health);
       setStages(project.stages);
       setInitialStages(project.stages);
+      setStageDueDates(project.stageDueDates ?? []);
       setCurrentStageIndex(project.currentStageIndex);
       setProgress(project.progress);
       setDescription(project.description ?? '');
@@ -56,6 +59,7 @@ export default function EditProjectDrawer({ project, onClose, onSave }: Props) {
 
   const handleStagesChange = (next: string[]) => {
     setStages(next);
+    setStageDueDates((prev) => prev.slice(0, next.length));
     if (currentStageIndex >= next.length) {
       setCurrentStageIndex(Math.max(0, next.length - 1));
     }
@@ -110,6 +114,7 @@ export default function EditProjectDrawer({ project, onClose, onSave }: Props) {
         health,
         stages,
         currentStageIndex,
+        stageDueDates,
         progress,
         description: description.trim() || undefined,
         dueDate: dueDate || undefined,
@@ -241,28 +246,75 @@ export default function EditProjectDrawer({ project, onClose, onSave }: Props) {
                 {/* Stage buttons with subtask badge */}
                 <div className="flex flex-col gap-1.5">
                   {stages.map((s, i) => {
-                    const badge = subtaskBadge(i);
+                    const badge      = subtaskBadge(i);
+                    const stageDate  = stageDueDates[i] ?? '';
+                    const isActive   = currentStageIndex === i;
+                    const isOverdue  = stageDate
+                      ? (() => { const d = new Date(stageDate); d.setHours(0,0,0,0); return d < new Date(new Date().setHours(0,0,0,0)); })()
+                      : false;
                     return (
-                      <button key={i} type="button" onClick={() => setCurrentStageIndex(i)}
-                        className={`flex items-center gap-3 rounded-xl px-4 py-2.5 text-sm font-medium ring-1 transition-all ${
-                          currentStageIndex === i
-                            ? 'bg-[#1C1410] ring-[#1C1410] text-white'
-                            : 'bg-[#F4EFE6] ring-[#E5DDD3] text-[#6B635C] hover:bg-[#EDE9E3]'
-                        }`}>
-                        <span className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[10px] font-bold ${
-                          currentStageIndex === i ? 'bg-white/20 text-white' : 'bg-[#E5DDD3] text-[#6B635C]'
-                        }`}>{i + 1}</span>
-                        <span className="flex-1 text-left">{s}</span>
-                        <span className="ml-auto flex items-center gap-2">
-                          {badge && (
-                            <span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${
-                              currentStageIndex === i ? 'bg-white/15 text-white/80' : 'bg-[#E5DDD3] text-[#6B635C]'
-                            }`}>{badge}</span>
+                      <div key={i} className={`flex flex-col rounded-xl ring-1 transition-all overflow-hidden ${
+                        isActive ? 'bg-[#1C1410] ring-[#1C1410]' : 'bg-[#F4EFE6] ring-[#E5DDD3] hover:bg-[#EDE9E3]'
+                      }`}>
+                        <button type="button" onClick={() => setCurrentStageIndex(i)}
+                          className="flex items-center gap-3 px-4 py-2.5 text-sm font-medium w-full">
+                          <span className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[10px] font-bold ${
+                            isActive ? 'bg-white/20 text-white' : 'bg-[#E5DDD3] text-[#6B635C]'
+                          }`}>{i + 1}</span>
+                          <span className={`flex-1 text-left ${isActive ? 'text-white' : 'text-[#6B635C]'}`}>{s}</span>
+                          <span className="ml-auto flex items-center gap-2">
+                            {badge && (
+                              <span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${
+                                isActive ? 'bg-white/15 text-white/80' : 'bg-[#E5DDD3] text-[#6B635C]'
+                              }`}>{badge}</span>
+                            )}
+                            {i < currentStageIndex && <span className="text-[10px] text-emerald-400">✓ 已完成</span>}
+                            {isActive && <span className="text-[10px] text-amber-300">← 当前</span>}
+                          </span>
+                        </button>
+
+                        {/* Stage due date row */}
+                        <div className={`flex items-center gap-1.5 px-4 pb-2 text-[11px] ${isActive ? 'text-white/50' : 'text-[#A8A29E]'}`}>
+                          <span>截止：</span>
+                          {editingStageDateIdx === i ? (
+                            <input
+                              type="date"
+                              autoFocus
+                              defaultValue={stageDate}
+                              className={`bg-transparent outline-none text-[11px] ${isActive ? 'text-white' : 'text-[#1C1512]'}`}
+                              onBlur={(e) => {
+                                const val = e.target.value;
+                                setStageDueDates((prev) => {
+                                  const next = [...prev];
+                                  next[i] = val;
+                                  return next;
+                                });
+                                setEditingStageDateIdx(null);
+                              }}
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter') e.currentTarget.blur();
+                                if (e.key === 'Escape') setEditingStageDateIdx(null);
+                              }}
+                            />
+                          ) : (
+                            <button
+                              type="button"
+                              onClick={() => setEditingStageDateIdx(i)}
+                              className={`hover:opacity-70 transition-opacity ${
+                                stageDate
+                                  ? isOverdue
+                                    ? 'font-semibold text-rose-400'
+                                    : isActive ? 'text-white/70' : 'text-[#6B635C]'
+                                  : 'italic opacity-50'
+                              }`}
+                            >
+                              {stageDate
+                                ? (() => { const d = new Date(stageDate); return `${d.getMonth()+1}/${d.getDate()}${isOverdue ? ' · 已逾期' : ''}`; })()
+                                : '点击设置'}
+                            </button>
                           )}
-                          {i < currentStageIndex && <span className="text-[10px] text-emerald-400">✓ 已完成</span>}
-                          {i === currentStageIndex && <span className="text-[10px] text-amber-300">← 当前</span>}
-                        </span>
-                      </button>
+                        </div>
+                      </div>
                     );
                   })}
                 </div>

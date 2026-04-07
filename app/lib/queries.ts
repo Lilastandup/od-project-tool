@@ -10,6 +10,7 @@ interface ProjectRow {
   health: string;
   stages: string[];
   current_stage_index: number;
+  stage_due_dates: string[] | null;
   progress: number;
   due_date: string;
   description: string | null;
@@ -35,6 +36,7 @@ function toProject(row: ProjectRow): Project {
     health:            row.health as HealthStatus,
     stages:            Array.isArray(row.stages) ? row.stages : [],
     currentStageIndex: row.current_stage_index ?? 0,
+    stageDueDates:     row.stage_due_dates ?? [],
     progress:          row.progress,
     dueDate:           row.due_date ?? '',
     description:       row.description ?? undefined,
@@ -61,7 +63,7 @@ export async function fetchProjects(client?: AnyClient): Promise<Project[]> {
   const supabase = client ?? createBrowserSupabase();
   const { data, error } = await supabase
     .from('projects')
-    .select('id, name, owner, owner_id, health, stages, current_stage_index, progress, due_date, description, sort_order, updated_at, updated_by')
+    .select('id, name, owner, owner_id, health, stages, current_stage_index, stage_due_dates, progress, due_date, description, sort_order, updated_at, updated_by')
     .order('sort_order', { ascending: true });
   if (error) throw new Error(`[fetchProjects] ${error.message}`);
   return (data as ProjectRow[]).map(toProject);
