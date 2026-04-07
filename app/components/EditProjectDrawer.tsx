@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { X, Loader2, Pencil, Check } from 'lucide-react';
 import type { HealthStatus, Project, Subtask } from '../lib/types';
 import type { UpdateProjectData } from '../lib/mutations';
+import { deleteSubtasksByStage, updateSubtaskStageIndex } from '../lib/mutations';
 import { fetchSubtasks } from '../lib/queries';
 import StageEditor from './StageEditor';
 import SubtaskPanel from './SubtaskPanel';
@@ -23,6 +24,7 @@ const HEALTH_OPTS = [
 export default function EditProjectDrawer({ project, onClose, onSave }: Props) {
   const [health,            setHealth]            = useState<HealthStatus>('green');
   const [stages,            setStages]            = useState<string[]>([]);
+  const [initialStages,     setInitialStages]     = useState<string[]>([]);
   const [currentStageIndex, setCurrentStageIndex] = useState(0);
   const [progress,          setProgress]          = useState(0);
   const [description,       setDescription]       = useState('');
@@ -42,6 +44,7 @@ export default function EditProjectDrawer({ project, onClose, onSave }: Props) {
     if (project) {
       setHealth(project.health);
       setStages(project.stages);
+      setInitialStages(project.stages);
       setCurrentStageIndex(project.currentStageIndex);
       setProgress(project.progress);
       setDescription(project.description ?? '');
@@ -60,11 +63,49 @@ export default function EditProjectDrawer({ project, onClose, onSave }: Props) {
 
   const isOpen = project !== null;
 
+  // 阶段变更时迁移子任务：删除已移除阶段的子任务，重排保留阶段的 stage_index
+  const migrateSubtasks = async (projectId: string) => {
+    const stagesUnchanged =
+      initialStages.length === stages.length &&
+      initialStages.every((s, i) => s === stages[i]);
+    if (stagesUnchanged) return;
+
+    // 为每个旧阶段找到新位置（名称匹配；改名视为同位置保留）
+    const oldToNew = initialStages.map((oldName, oldIdx) => {
+      const newIdx = stages.indexOf(oldName);
+      if (newIdx !== -1) return newIdx;                          // 找到同名阶段
+      if (oldIdx < stages.length && !initialStages.includes(stages[oldIdx]))
+        return oldIdx;                                           // 同位置改了名，视为改名保留
+      return -1;                                                 // 已删除
+    });
+
+    // 先删除已移除阶段的子任务
+    for (let i = 0; i < oldToNew.length; i++) {
+      if (oldToNew[i] === -1) await deleteSubtasksByStage(projectId, i);
+    }
+
+    // 再用临时偏移量做两阶段重排，避免 index 冲突
+    const OFFSET = 10000;
+    for (let i = 0; i < oldToNew.length; i++) {
+      const newIdx = oldToNew[i];
+      if (newIdx !== -1 && newIdx !== i) {
+        await updateSubtaskStageIndex(projectId, i, i + OFFSET);
+      }
+    }
+    for (let i = 0; i < oldToNew.length; i++) {
+      const newIdx = oldToNew[i];
+      if (newIdx !== -1 && newIdx !== i) {
+        await updateSubtaskStageIndex(projectId, i + OFFSET, newIdx);
+      }
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!project || stages.length === 0) return;
     setLoading(true);
     try {
+      await migrateSubtasks(project.id);
       await onSave(project.id, {
         health,
         stages,

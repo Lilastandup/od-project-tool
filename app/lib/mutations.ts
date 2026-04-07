@@ -127,6 +127,17 @@ export async function shareProject(projectId: string, userIds: string[]): Promis
   if (error) throw new Error(error.message);
 }
 
+/** 将某项目某阶段的所有子任务批量改 stage_index（阶段重排时调用） */
+export async function updateSubtaskStageIndex(projectId: string, fromIndex: number, toIndex: number): Promise<void> {
+  const supabase = createBrowserSupabase();
+  const { error } = await supabase
+    .from('subtasks')
+    .update({ stage_index: toIndex })
+    .eq('project_id', projectId)
+    .eq('stage_index', fromIndex);
+  if (error) throw new Error(error.message);
+}
+
 /** 删除某项目某阶段的所有子任务（阶段被删除时调用） */
 export async function deleteSubtasksByStage(projectId: string, stageIndex: number): Promise<void> {
   const supabase = createBrowserSupabase();
