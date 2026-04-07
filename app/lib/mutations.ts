@@ -10,6 +10,7 @@ export interface CreateProjectData {
   progress: number;
   dueDate: string;
   description?: string;
+  updatedBy?: string;
 }
 
 export interface UpdateProjectData {
@@ -36,6 +37,7 @@ export async function createProject(data: CreateProjectData): Promise<void> {
     description:         data.description ?? null,
     sort_order:          9999,
     owner_id:            user?.id ?? null,
+    updated_by:          data.updatedBy ?? null,
   });
   if (error) throw new Error(error.message);
 }

@@ -92,7 +92,7 @@ export default function DashboardClient({ initialProjects, initialMilestones, us
   // ── CRUD handlers ───────────────────────────────────────────
   const handleCreate = useCallback(async (data: CreateProjectData) => {
     try {
-      await createProject(data);
+      await createProject({ ...data, updatedBy: user.name });
       await refreshData();
       setShowNewModal(false);
       toast('success', `「${data.name}」创建成功`);
