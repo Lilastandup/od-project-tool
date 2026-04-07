@@ -48,7 +48,7 @@ export default function Navbar({ user }: Props) {
             <span className="text-[15px] font-semibold tracking-tight text-white">
               OD 项目控制塔
             </span>
-            <span className="hidden text-[11px] font-medium tracking-widest text-white/30 uppercase sm:block">
+            <span className="hidden text-[10px] font-medium tracking-[0.12em] text-white/30 uppercase sm:block">
               HR · Organization Development
             </span>
           </div>
