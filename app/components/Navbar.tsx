@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Bell, ChevronDown, LogOut, KeyRound } from 'lucide-react';
+import { ChevronDown, LogOut, KeyRound } from 'lucide-react';
 import { createBrowserSupabase } from '../lib/supabase';
 import type { AuthUser } from '../page';
 import ChangePasswordModal from './ChangePasswordModal';
@@ -56,13 +56,6 @@ export default function Navbar({ user }: Props) {
 
         {/* Right side */}
         <div className="flex items-center gap-1">
-          <button
-            aria-label="通知"
-            className="flex h-8 w-8 items-center justify-center rounded-lg text-white/40 transition-colors hover:bg-white/8 hover:text-white/80"
-          >
-            <Bell className="h-4 w-4" />
-          </button>
-
           <div className="mx-2 h-5 w-px bg-white/10" />
 
           {/* User menu */}

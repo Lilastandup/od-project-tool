@@ -41,6 +41,7 @@ export default function StageEditor({ stages, onChange }: Props) {
 
   // ── 清空 ──────────────────────────────────────────────────────
   const clearAll = () => {
+    if (!window.confirm('确认清空所有阶段？')) return;
     setEditingIdx(null);
     onChange([]);
   };
