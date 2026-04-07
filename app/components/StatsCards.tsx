@@ -9,10 +9,12 @@ interface Props {
 
 export default function StatsCards({ projects, subtasks }: Props) {
   const activeCount = projects.length;
+  const activeProjectIds = new Set(projects.map((p) => p.id));
+  const activeSubtasks = subtasks.filter((t) => activeProjectIds.has(t.projectId));
 
   const atRiskCount = projects.filter((p) => {
     const idx = Math.min(p.currentStageIndex, p.stages.length - 1);
-    const projectSubtasks = subtasks.filter((t) => t.projectId === p.id);
+    const projectSubtasks = activeSubtasks.filter((t) => t.projectId === p.id);
     const eff = effectiveHealth(p.health, p.dueDate, idx, projectSubtasks);
     return eff === 'yellow' || eff === 'red';
   }).length;
@@ -22,7 +24,7 @@ export default function StatsCards({ projects, subtasks }: Props) {
   const weekLater = new Date(today);
   weekLater.setDate(today.getDate() + 7);
 
-  const weekSubtaskCount = subtasks.filter((t) => {
+  const weekSubtaskCount = activeSubtasks.filter((t) => {
     if (t.isCompleted || !t.dueDate) return false;
     const due = new Date(t.dueDate);
     return due <= weekLater;

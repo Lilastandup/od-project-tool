@@ -30,16 +30,20 @@ export default function EditProjectDrawer({ project, onClose, onSave }: Props) {
   const [progress,          setProgress]          = useState(0);
   const [description,       setDescription]       = useState('');
   const [dueDate,           setDueDate]           = useState('');
-  const [editingStages,     setEditingStages]     = useState(false);
+  const [editingStages,       setEditingStages]       = useState(false);
   const [editingStageDateIdx, setEditingStageDateIdx] = useState<number | null>(null);
-  const [loading,           setLoading]           = useState(false);
-  const [subtasks,          setSubtasks]          = useState<Subtask[]>([]);
+  const [loading,             setLoading]             = useState(false);
+  const [subtaskLoadError,    setSubtaskLoadError]    = useState(false);
+  const [subtasks,            setSubtasks]            = useState<Subtask[]>([]);
 
   const loadSubtasks = useCallback(async (projectId: string) => {
+    setSubtaskLoadError(false);
     try {
       const data = await fetchSubtasks(projectId);
       setSubtasks(data);
-    } catch { /* silent */ }
+    } catch {
+      setSubtaskLoadError(true);
+    }
   }, []);
 
   useEffect(() => {
@@ -110,11 +114,14 @@ export default function EditProjectDrawer({ project, onClose, onSave }: Props) {
     setLoading(true);
     try {
       await migrateSubtasks(project.id);
+      // 规范化：确保长度与 stages 一致，空洞填为空字符串
+      const normalizedDueDates = Array.from({ length: stages.length }, (_, i) => stageDueDates[i] ?? '');
+
       await onSave(project.id, {
         health,
         stages,
         currentStageIndex,
-        stageDueDates,
+        stageDueDates: normalizedDueDates,
         progress,
         description: description.trim() || undefined,
         dueDate: dueDate || undefined,
@@ -140,7 +147,7 @@ export default function EditProjectDrawer({ project, onClose, onSave }: Props) {
         className={`fixed inset-0 z-40 bg-black/30 backdrop-blur-sm transition-opacity duration-300 ${
           isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
         }`}
-        onClick={onClose}
+        onClick={loading ? undefined : onClose}
       />
 
       <div
@@ -322,7 +329,10 @@ export default function EditProjectDrawer({ project, onClose, onSave }: Props) {
             )}
 
             {/* ── 子任务面板（当前阶段）── */}
-            {project && stages.length > 0 && (
+            {subtaskLoadError && (
+              <p className="text-xs text-rose-500">子任务加载失败，请关闭后重试</p>
+            )}
+            {project && stages.length > 0 && !subtaskLoadError && (
               <SubtaskPanel
                 projectId={project.id}
                 stageIndex={currentStageIndex}
