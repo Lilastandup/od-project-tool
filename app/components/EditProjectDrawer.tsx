@@ -115,9 +115,15 @@ export default function EditProjectDrawer({ project, onClose, onSave }: Props) {
     setLoading(true);
     try {
       await migrateSubtasks(project.id);
+    } catch {
+      setLoading(false);
+      // migrateSubtasks 失败时不继续保存，error toast 由 migrateSubtasks 内部向上抛出后由 parent 处理
+      // 这里直接 return 防止阶段结构和子任务数据错位
+      return;
+    }
+    try {
       // 规范化：确保长度与 stages 一致，空洞填为空字符串
       const normalizedDueDates = Array.from({ length: stages.length }, (_, i) => stageDueDates[i] ?? '');
-
       await onSave(project.id, {
         health,
         stages,
@@ -164,8 +170,9 @@ export default function EditProjectDrawer({ project, onClose, onSave }: Props) {
               {project?.name}
             </h2>
           </div>
-          <button onClick={onClose}
-            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-[#A8A29E] transition hover:bg-[#F4EFE6] hover:text-[#1C1512]">
+          <button onClick={loading ? undefined : onClose}
+            disabled={loading}
+            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-[#A8A29E] transition hover:bg-[#F4EFE6] hover:text-[#1C1512] disabled:opacity-40 disabled:cursor-not-allowed">
             <X className="h-4 w-4" />
           </button>
         </div>
@@ -208,7 +215,19 @@ export default function EditProjectDrawer({ project, onClose, onSave }: Props) {
                 <input
                   type="date"
                   value={dueDate}
-                  onChange={(e) => setDueDate(e.target.value)}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    setDueDate(val);
+                    // 如果新项目 DDL 比某些阶段 DDL 更早，清除那些阶段的日期并提示
+                    if (val) {
+                      const violated = stageDueDates.some((d) => d && d > val);
+                      if (violated) {
+                        setStageDueDates((prev) => prev.map((d) => (d && d > val ? '' : d)));
+                        setStageDateError('部分阶段截止日期已超出新项目截止日期，已自动清除');
+                        setTimeout(() => setStageDateError(null), 5000);
+                      }
+                    }
+                  }}
                   className="w-full rounded-lg border border-[#E5DDD3] bg-white px-3 py-2 text-sm text-[#1C1512] outline-none transition focus:border-amber-400 focus:ring-2 focus:ring-amber-100"
                 />
               </div>
@@ -366,8 +385,8 @@ export default function EditProjectDrawer({ project, onClose, onSave }: Props) {
           {/* Footer */}
           <div className="mt-auto border-t border-[#EDE9E3] px-6 py-4">
             <div className="flex gap-3">
-              <button type="button" onClick={onClose}
-                className="flex-1 rounded-xl border border-[#E5DDD3] bg-[#F4EFE6] py-2.5 text-sm font-medium text-[#6B635C] transition hover:bg-[#EDE9E3]">
+              <button type="button" onClick={onClose} disabled={loading}
+                className="flex-1 rounded-xl border border-[#E5DDD3] bg-[#F4EFE6] py-2.5 text-sm font-medium text-[#6B635C] transition hover:bg-[#EDE9E3] disabled:opacity-40 disabled:cursor-not-allowed">
                 取消
               </button>
               <button type="submit" disabled={loading || stages.length === 0}
