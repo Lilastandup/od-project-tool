@@ -44,7 +44,7 @@ export default function Navbar({ user }: Props) {
             </div>
           </div>
 
-          <div className="flex flex-col leading-none">
+          <div className="flex flex-col gap-[3px]">
             <span className="text-[15px] font-semibold tracking-tight text-white">
               OD 项目控制塔
             </span>
