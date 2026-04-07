@@ -29,25 +29,48 @@ function formatDue(dateStr: string): { label: string; overdue: boolean } {
 export default function SubtaskPanel({
   projectId, stageIndex, stageName, subtasks, onChange,
 }: Props) {
-  const [newTitle, setNewTitle] = useState('');
-  const [newDate,  setNewDate]  = useState('');
-  const [saving,   setSaving]   = useState(false);
+  const [newTitle,      setNewTitle]      = useState('');
+  const [newDate,       setNewDate]       = useState('');
+  const [saving,        setSaving]        = useState(false);
+  const [error,         setError]         = useState<string | null>(null);
+  const [editingDateId, setEditingDateId] = useState<string | null>(null);
 
   const stageSubtasks = subtasks.filter((t) => t.stageIndex === stageIndex);
   const doneCount     = stageSubtasks.filter((t) => t.isCompleted).length;
+
+  const showError = (msg: string) => {
+    setError(msg);
+    setTimeout(() => setError(null), 4000);
+  };
 
   const handleToggle = async (task: Subtask) => {
     try {
       await updateSubtask(task.id, { isCompleted: !task.isCompleted });
       onChange();
-    } catch { /* silent */ }
+    } catch {
+      showError('更新失败，请重试');
+    }
   };
 
   const handleDelete = async (id: string) => {
     try {
       await deleteSubtask(id);
       onChange();
-    } catch { /* silent */ }
+    } catch {
+      showError('删除失败，请重试');
+    }
+  };
+
+  const handleDateSave = async (task: Subtask, value: string) => {
+    setEditingDateId(null);
+    const newDueDate = value || null;
+    if (newDueDate === (task.dueDate ?? null)) return; // no change
+    try {
+      await updateSubtask(task.id, { dueDate: newDueDate });
+      onChange();
+    } catch {
+      showError('修改截止日期失败，请重试');
+    }
   };
 
   const handleAdd = async () => {
@@ -64,7 +87,9 @@ export default function SubtaskPanel({
       setNewTitle('');
       setNewDate('');
       onChange();
-    } catch { /* silent */ } finally {
+    } catch {
+      showError('添加失败，请重试');
+    } finally {
       setSaving(false);
     }
   };
@@ -123,13 +148,31 @@ export default function SubtaskPanel({
                     }`}>
                       {task.title}
                     </span>
-                    {due && (
-                      <span className={`mt-0.5 flex items-center gap-1 text-[10px] ${
-                        due.overdue ? 'font-semibold text-rose-500' : 'text-[#A8A29E]'
-                      }`}>
-                        <Calendar className="h-2.5 w-2.5" />
-                        {due.label}
-                      </span>
+                    {editingDateId === task.id ? (
+                      <input
+                        type="date"
+                        autoFocus
+                        defaultValue={task.dueDate ?? ''}
+                        onBlur={(e) => handleDateSave(task, e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') { e.preventDefault(); handleDateSave(task, e.currentTarget.value); }
+                          if (e.key === 'Escape') setEditingDateId(null);
+                        }}
+                        className="mt-0.5 w-[110px] bg-transparent text-[11px] text-[#6B635C] outline-none"
+                      />
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => setEditingDateId(task.id)}
+                        className={`mt-0.5 flex items-center gap-1 text-[10px] transition-opacity hover:opacity-70 ${
+                          due
+                            ? due.overdue ? 'font-semibold text-rose-500' : 'text-[#A8A29E]'
+                            : 'text-[#D5CFC7]'
+                        }`}
+                      >
+                        <Calendar className="h-2.5 w-2.5 shrink-0" />
+                        {due ? due.label : '添加截止日期'}
+                      </button>
                     )}
                   </div>
 
@@ -178,7 +221,12 @@ export default function SubtaskPanel({
         </div>
       </div>
 
-      <p className="mt-1.5 text-[10px] text-[#C7BFB5]">子任务不影响整体完成进度</p>
+      {error && (
+        <p className="mt-1.5 text-[11px] font-medium text-rose-500">{error}</p>
+      )}
+      {!error && (
+        <p className="mt-1.5 text-[10px] text-[#C7BFB5]">子任务不影响整体完成进度</p>
+      )}
     </div>
   );
 }
