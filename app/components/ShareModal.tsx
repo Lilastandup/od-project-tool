@@ -18,17 +18,22 @@ interface Props {
 export default function ShareModal({
   projectId, projectName, profiles, open, onClose, onSaved,
 }: Props) {
-  const [selected, setSelected] = useState<Set<string>>(new Set());
-  const [loading,  setLoading]  = useState(false);
-  const [saving,   setSaving]   = useState(false);
-  const [saveError, setSaveError] = useState<string | null>(null);
+  const [selected,    setSelected]    = useState<Set<string>>(new Set());
+  const [initialIds,  setInitialIds]  = useState<Set<string>>(new Set());
+  const [loading,     setLoading]     = useState(false);
+  const [saving,      setSaving]      = useState(false);
+  const [saveError,   setSaveError]   = useState<string | null>(null);
 
   useEffect(() => {
     if (!open) return;
     setLoading(true);
     fetchProjectMemberIds(projectId)
-      .then((ids) => setSelected(new Set(ids)))
-      .catch(() => setSelected(new Set()))
+      .then((ids) => {
+        const s = new Set(ids);
+        setSelected(s);
+        setInitialIds(s);
+      })
+      .catch(() => { setSelected(new Set()); setInitialIds(new Set()); })
       .finally(() => setLoading(false));
   }, [open, projectId]);
 
@@ -151,7 +156,13 @@ export default function ShareModal({
             className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-[#1C1410] py-2.5 text-sm font-semibold text-white transition hover:bg-[#2C2318] disabled:opacity-50"
           >
             {saving && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
-            {saving ? '保存中…' : `确认共享${selected.size > 0 ? `（${selected.size} 人）` : ''}`}
+            {saving ? '保存中…' : (() => {
+              if (selected.size === 0 && initialIds.size > 0) return '取消全部共享';
+              const hasRemoved = [...initialIds].some((id) => !selected.has(id));
+              const hasAdded   = [...selected].some((id) => !initialIds.has(id));
+              if (hasRemoved || hasAdded) return `保存更改（${selected.size} 人）`;
+              return selected.size > 0 ? `确认共享（${selected.size} 人）` : '确认共享';
+            })()}
           </button>
         </div>
       </div>
