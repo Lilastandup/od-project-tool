@@ -1,0 +1,2200 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OD 项目控制塔 · 使用指南</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:        #F4EFE6;
+    --bg-card:   #FFFCF8;
+    --bg-subtle: #F9F7F3;
+    --border:    #E5DDD3;
+    --border-md: #EDE9E3;
+    --dark:      #1C1410;
+    --dark-2:    #2D2018;
+    --mid:       #6B635C;
+    --light:     #A8A29E;
+    --lighter:   #C7BFB5;
+    --amber:     #F59E0B;
+    --amber-light:#FEF3C7;
+    --amber-dark: #D97706;
+    --emerald:   #10B981;
+    --rose:      #F43F5E;
+    --sidebar-w: 240px;
+    --content-max: 780px;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'Plus Jakarta Sans', 'Noto Serif SC', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--dark);
+    line-height: 1.6;
+  }
+
+  /* ─── Layout ─────────────────────────────────────── */
+  .layout {
+    display: flex;
+    min-height: 100vh;
+  }
+
+  /* ─── Sidebar ─────────────────────────────────────── */
+  .sidebar {
+    width: var(--sidebar-w);
+    flex-shrink: 0;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow-y: auto;
+    background: var(--bg-card);
+    border-right: 1px solid var(--border);
+    padding: 24px 0 40px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .sidebar-logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0 20px 24px;
+    border-bottom: 1px solid var(--border-md);
+    margin-bottom: 16px;
+  }
+
+  .sidebar-logo-icon {
+    width: 32px;
+    height: 32px;
+    background: var(--dark);
+    border-radius: 9px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 3px;
+    padding: 7px;
+    flex-shrink: 0;
+  }
+  .sidebar-logo-icon span { border-radius: 1.5px; background: var(--amber); }
+  .sidebar-logo-icon span:nth-child(2),
+  .sidebar-logo-icon span:nth-child(3) { opacity: 0.3; }
+
+  .sidebar-logo-text { font-size: 13px; font-weight: 700; color: var(--dark); line-height: 1.3; }
+  .sidebar-logo-sub  { font-size: 11px; color: var(--light); }
+
+  .sidebar-label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--lighter);
+    padding: 0 20px 8px;
+  }
+
+  .sidebar-nav { list-style: none; padding: 0 10px; }
+
+  .sidebar-nav li a {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    padding: 7px 10px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--mid);
+    text-decoration: none;
+    transition: background 0.15s, color 0.15s;
+  }
+
+  .sidebar-nav li a:hover {
+    background: var(--bg);
+    color: var(--dark);
+  }
+
+  .sidebar-nav li a.active {
+    background: var(--amber-light);
+    color: var(--amber-dark);
+    font-weight: 600;
+  }
+
+  .sidebar-nav li a .nav-icon { font-size: 15px; flex-shrink: 0; }
+  .sidebar-nav li a .nav-num {
+    width: 18px;
+    height: 18px;
+    border-radius: 5px;
+    background: var(--bg);
+    color: var(--mid);
+    font-size: 10px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-left: auto;
+  }
+
+  /* ─── Main Content ─────────────────────────────────── */
+  .main {
+    flex: 1;
+    min-width: 0;
+    padding: 48px 48px 120px;
+  }
+
+  /* ─── Cover ───────────────────────────────────────── */
+  .cover {
+    background: var(--dark);
+    border-radius: 24px;
+    padding: 52px 52px 44px;
+    margin-bottom: 64px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .cover::before {
+    content: '';
+    position: absolute;
+    top: -60px; right: -60px;
+    width: 300px; height: 300px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(245,158,11,0.18) 0%, transparent 65%);
+    pointer-events: none;
+  }
+
+  .cover::after {
+    content: '';
+    position: absolute;
+    bottom: -40px; left: 40px;
+    width: 200px; height: 200px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(245,158,11,0.08) 0%, transparent 65%);
+    pointer-events: none;
+  }
+
+  .cover-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(245,158,11,0.15);
+    border: 1px solid rgba(245,158,11,0.3);
+    border-radius: 20px;
+    padding: 4px 12px;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--amber);
+    letter-spacing: 0.05em;
+    margin-bottom: 20px;
+  }
+
+  .cover h1 {
+    font-family: 'Noto Serif SC', serif;
+    font-size: 36px;
+    font-weight: 700;
+    color: white;
+    line-height: 1.25;
+    margin-bottom: 10px;
+  }
+
+  .cover-sub {
+    font-size: 15px;
+    color: rgba(255,255,255,0.45);
+    margin-bottom: 32px;
+  }
+
+  .cover-meta {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+
+  .cover-meta-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: rgba(255,255,255,0.35);
+  }
+
+  .cover-meta-item strong { color: rgba(255,255,255,0.6); font-weight: 600; }
+
+  /* ─── Section ─────────────────────────────────────── */
+  .section {
+    margin-bottom: 72px;
+    scroll-margin-top: 32px;
+  }
+
+  .section-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    margin-bottom: 28px;
+  }
+
+  .section-num {
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    background: var(--dark);
+    color: var(--amber);
+    font-size: 16px;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  .section-header-text h2 {
+    font-family: 'Noto Serif SC', serif;
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--dark);
+    line-height: 1.3;
+  }
+
+  .section-header-text p {
+    font-size: 14px;
+    color: var(--mid);
+    margin-top: 4px;
+  }
+
+  /* ─── Step list ───────────────────────────────────── */
+  .steps { display: flex; flex-direction: column; gap: 12px; margin: 20px 0; }
+
+  .step {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+  }
+
+  .step-circle {
+    width: 26px;
+    height: 26px;
+    border-radius: 8px;
+    background: var(--amber);
+    color: white;
+    font-size: 12px;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  .step-body {
+    flex: 1;
+    font-size: 14px;
+    color: #44403C;
+    line-height: 1.65;
+    padding-top: 3px;
+  }
+
+  .step-body strong { color: var(--dark); font-weight: 600; }
+
+  /* ─── Notice boxes ────────────────────────────────── */
+  .notice {
+    display: flex;
+    gap: 10px;
+    padding: 14px 16px;
+    border-radius: 12px;
+    font-size: 13.5px;
+    line-height: 1.6;
+    margin: 16px 0;
+  }
+
+  .notice-amber {
+    background: #FFFBEB;
+    border: 1px solid #FDE68A;
+    color: #92400E;
+  }
+
+  .notice-blue {
+    background: #EFF6FF;
+    border: 1px solid #BFDBFE;
+    color: #1E3A8A;
+  }
+
+  .notice-green {
+    background: #ECFDF5;
+    border: 1px solid #A7F3D0;
+    color: #065F46;
+  }
+
+  .notice-icon { font-size: 16px; flex-shrink: 0; margin-top: 2px; }
+
+  /* ─── UI Mockup container ─────────────────────────── */
+  .mockup-wrap {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 24px;
+    margin: 24px 0;
+  }
+
+  .mockup-label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--light);
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .mockup-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  /* ─── Login Mockup ────────────────────────────────── */
+  .login-mockup {
+    max-width: 340px;
+    margin: 0 auto;
+    background: var(--bg-card);
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    overflow: hidden;
+    box-shadow: 0 8px 32px rgba(28,20,16,0.12);
+  }
+
+  .lm-header {
+    background: var(--dark);
+    padding: 28px 28px 24px;
+    text-align: center;
+  }
+
+  .lm-logo {
+    width: 44px; height: 44px;
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 13px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4px;
+    padding: 10px;
+    margin: 0 auto 14px;
+  }
+  .lm-logo span { border-radius: 2px; background: var(--amber); }
+  .lm-logo span:nth-child(2), .lm-logo span:nth-child(3) { opacity: 0.3; }
+
+  .lm-title { color: white; font-size: 16px; font-weight: 700; }
+  .lm-sub   { color: rgba(255,255,255,0.4); font-size: 12px; margin-top: 3px; }
+
+  .lm-body { padding: 24px 28px 28px; }
+
+  .lm-field { margin-bottom: 14px; }
+  .lm-field-label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--mid);
+    margin-bottom: 6px;
+  }
+
+  .lm-input {
+    width: 100%;
+    background: var(--bg-subtle);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-size: 13px;
+    color: var(--dark);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .lm-input .lm-input-val { color: var(--mid); }
+  .lm-input .lm-input-dots { letter-spacing: 3px; color: var(--dark); font-size: 10px; }
+
+  .lm-btn {
+    width: 100%;
+    background: var(--dark);
+    color: white;
+    border-radius: 10px;
+    padding: 11px;
+    text-align: center;
+    font-size: 14px;
+    font-weight: 700;
+    margin-top: 4px;
+    cursor: default;
+  }
+
+  .lm-hint {
+    text-align: center;
+    font-size: 11px;
+    color: var(--light);
+    margin-top: 12px;
+  }
+
+  /* ─── Dashboard Mockup ────────────────────────────── */
+  .dash-mockup {
+    background: var(--bg);
+    border-radius: 16px;
+    border: 1px solid var(--border);
+    overflow: hidden;
+  }
+
+  .dash-topbar {
+    background: var(--bg-card);
+    border-bottom: 1px solid var(--border-md);
+    padding: 12px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .dash-topbar-logo {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--dark);
+  }
+
+  .dash-topbar-logo-icon {
+    width: 24px; height: 24px;
+    background: var(--dark);
+    border-radius: 7px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2.5px;
+    padding: 5.5px;
+  }
+  .dash-topbar-logo-icon span { border-radius: 1px; background: var(--amber); }
+  .dash-topbar-logo-icon span:nth-child(2),
+  .dash-topbar-logo-icon span:nth-child(3) { opacity: 0.3; }
+
+  .dash-topbar-right { display: flex; align-items: center; gap: 10px; }
+
+  .dash-avatar {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #F59E0B, #D97706);
+    color: white;
+    font-size: 11px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .dash-new-btn {
+    background: var(--dark);
+    color: white;
+    border-radius: 8px;
+    padding: 5px 12px;
+    font-size: 12px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  .dash-body { padding: 16px 20px; }
+
+  .dash-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+
+  .dash-stat {
+    background: var(--bg-card);
+    border: 1px solid var(--border-md);
+    border-radius: 12px;
+    padding: 12px;
+  }
+
+  .dash-stat-label { font-size: 10px; color: var(--light); font-weight: 500; }
+  .dash-stat-val   { font-size: 20px; font-weight: 800; color: var(--dark); line-height: 1; margin: 4px 0 2px; }
+  .dash-stat-sub   { font-size: 10px; color: var(--mid); }
+
+  .dash-section-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+  }
+
+  .dash-section-label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--light);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .dash-section-count {
+    background: var(--border-md);
+    border-radius: 20px;
+    padding: 1px 7px;
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--mid);
+  }
+
+  .dash-sort-pills {
+    display: flex;
+    gap: 4px;
+  }
+
+  .dash-sort-pill {
+    border-radius: 20px;
+    padding: 3px 9px;
+    font-size: 10px;
+    font-weight: 600;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    color: var(--mid);
+  }
+
+  .dash-sort-pill.active {
+    background: var(--dark);
+    border-color: var(--dark);
+    color: white;
+  }
+
+  .dash-cards { display: flex; flex-direction: column; gap: 8px; }
+
+  .dash-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-md);
+    border-radius: 14px;
+    padding: 14px 16px;
+  }
+
+  .dash-card-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 8px;
+  }
+
+  .dash-card-name {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--dark);
+  }
+
+  .dash-card-owner {
+    font-size: 11px;
+    color: var(--light);
+    margin-top: 2px;
+  }
+
+  .dash-health {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    border-radius: 20px;
+    padding: 3px 9px;
+    font-size: 11px;
+    font-weight: 600;
+  }
+
+  .dash-health-dot { width: 6px; height: 6px; border-radius: 50%; }
+
+  .dash-health.green {
+    background: #ECFDF5;
+    color: #065F46;
+  }
+  .dash-health.green .dash-health-dot { background: #10B981; }
+
+  .dash-health.yellow {
+    background: #FFFBEB;
+    color: #92400E;
+  }
+  .dash-health.yellow .dash-health-dot { background: #F59E0B; }
+
+  .dash-health.red {
+    background: #FFF1F2;
+    color: #9F1239;
+  }
+  .dash-health.red .dash-health-dot { background: #F43F5E; }
+
+  .dash-stage-dots {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    margin-bottom: 8px;
+  }
+
+  .dash-stage-dot {
+    height: 4px;
+    border-radius: 2px;
+  }
+
+  .dash-prog-bar {
+    height: 4px;
+    background: var(--border-md);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  .dash-prog-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #F59E0B, #D97706);
+    border-radius: 2px;
+  }
+
+  /* Annotation arrows */
+  .annotation-wrap {
+    position: relative;
+    font-size: 11px;
+  }
+
+  .annot-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 6px;
+    color: var(--mid);
+    font-size: 11px;
+  }
+
+  .annot-arrow {
+    font-size: 14px;
+    color: var(--amber);
+  }
+
+  .annot-chip {
+    background: var(--amber-light);
+    border: 1px solid #FDE68A;
+    border-radius: 5px;
+    padding: 1px 7px;
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--amber-dark);
+  }
+
+  /* ─── New Project Modal Mockup ────────────────────── */
+  .modal-mockup {
+    background: rgba(0,0,0,0.25);
+    border-radius: 16px;
+    padding: 20px;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+  }
+
+  .modal-card {
+    background: var(--bg-card);
+    border-radius: 18px;
+    box-shadow: 0 16px 48px rgba(28,20,16,0.2);
+    width: 100%;
+    max-width: 400px;
+    overflow: hidden;
+  }
+
+  .modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--border-md);
+  }
+
+  .modal-title { font-size: 14px; font-weight: 700; color: var(--dark); }
+
+  .modal-x {
+    width: 26px; height: 26px;
+    border-radius: 7px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    color: var(--light);
+  }
+
+  .modal-body { padding: 16px 20px; }
+
+  .modal-field { margin-bottom: 12px; }
+
+  .modal-field-label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    color: var(--mid);
+    margin-bottom: 5px;
+  }
+
+  .modal-field-label .req { color: #F43F5E; }
+
+  .modal-input {
+    width: 100%;
+    background: var(--bg-subtle);
+    border: 1px solid var(--border);
+    border-radius: 9px;
+    padding: 8px 12px;
+    font-size: 12px;
+    color: var(--dark);
+  }
+
+  .modal-input.placeholder { color: var(--lighter); }
+
+  .modal-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+  .modal-health-pills {
+    display: flex;
+    gap: 6px;
+  }
+
+  .modal-health-pill {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    padding: 6px;
+    border-radius: 8px;
+    border: 1px solid;
+    font-size: 11px;
+    font-weight: 600;
+  }
+
+  .modal-health-pill.green {
+    background: #ECFDF5;
+    border-color: #A7F3D0;
+    color: #065F46;
+  }
+  .modal-health-pill.yellow {
+    background: var(--bg);
+    border-color: var(--border);
+    color: var(--mid);
+  }
+  .modal-health-pill.red {
+    background: var(--bg);
+    border-color: var(--border);
+    color: var(--mid);
+  }
+  .modal-health-pill .dot { width: 6px; height: 6px; border-radius: 50%; }
+  .modal-health-pill.green .dot { background: #10B981; }
+  .modal-health-pill.yellow .dot { background: #F59E0B; }
+  .modal-health-pill.red    .dot { background: #F43F5E; }
+
+  .modal-stage-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+  }
+
+  .modal-stage-tag {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 10px;
+    border-radius: 7px;
+    font-size: 11px;
+    font-weight: 600;
+  }
+
+  .modal-stage-tag.active {
+    background: var(--dark);
+    color: white;
+  }
+
+  .modal-stage-tag.inactive {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    color: var(--mid);
+  }
+
+  .modal-footer {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    padding: 12px 20px 16px;
+    border-top: 1px solid var(--border-md);
+  }
+
+  .modal-btn-cancel {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 9px;
+    padding: 9px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--mid);
+    text-align: center;
+  }
+
+  .modal-btn-submit {
+    background: var(--dark);
+    border-radius: 9px;
+    padding: 9px;
+    font-size: 12px;
+    font-weight: 700;
+    color: white;
+    text-align: center;
+  }
+
+  /* ─── Edit Panel Mockup ───────────────────────────── */
+  .edit-panel {
+    background: var(--bg-card);
+    border-radius: 16px;
+    border: 1px solid var(--border-md);
+    overflow: hidden;
+    box-shadow: 0 4px 20px rgba(28,20,16,0.08);
+  }
+
+  .ep-header {
+    background: var(--dark);
+    padding: 16px 20px;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+  }
+
+  .ep-title { color: white; font-size: 15px; font-weight: 700; }
+  .ep-owner { color: rgba(255,255,255,0.45); font-size: 12px; margin-top: 2px; }
+
+  .ep-body { padding: 16px 20px; }
+
+  .ep-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+  }
+
+  .ep-label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--mid);
+  }
+
+  .ep-val {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--dark);
+  }
+
+  .ep-slider-wrap {
+    margin-bottom: 16px;
+  }
+
+  .ep-slider-track {
+    height: 8px;
+    background: var(--border-md);
+    border-radius: 4px;
+    position: relative;
+    margin: 8px 0;
+  }
+
+  .ep-slider-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #F59E0B, #D97706);
+    border-radius: 4px;
+    position: relative;
+  }
+
+  .ep-slider-thumb {
+    position: absolute;
+    right: -8px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: white;
+    border: 2px solid var(--amber);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+  }
+
+  .ep-stage-btns {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 16px;
+  }
+
+  .ep-stage-btn {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: default;
+  }
+
+  .ep-stage-btn.active {
+    background: var(--dark);
+    color: white;
+  }
+
+  .ep-stage-btn.done {
+    background: var(--border-md);
+    color: var(--light);
+  }
+
+  .ep-stage-btn.todo {
+    background: var(--bg-subtle);
+    border: 1px solid var(--border);
+    color: var(--mid);
+  }
+
+  .ep-stage-btn-num {
+    width: 16px;
+    height: 16px;
+    border-radius: 5px;
+    font-size: 9px;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .ep-stage-btn.active .ep-stage-btn-num { background: rgba(255,255,255,0.2); color: white; }
+  .ep-stage-btn.done   .ep-stage-btn-num { background: rgba(0,0,0,0.08); color: var(--light); }
+  .ep-stage-btn.todo   .ep-stage-btn-num { background: var(--border); color: var(--mid); }
+
+  .ep-subtask-list { display: flex; flex-direction: column; gap: 6px; margin-bottom: 10px; }
+
+  .ep-subtask {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 10px;
+    background: var(--bg-subtle);
+    border: 1px solid var(--border);
+    border-radius: 9px;
+    font-size: 12px;
+    color: var(--dark);
+  }
+
+  .ep-subtask-check {
+    width: 14px; height: 14px;
+    border-radius: 4px;
+    border: 1.5px solid var(--border);
+    flex-shrink: 0;
+  }
+
+  .ep-subtask-check.done {
+    background: #10B981;
+    border-color: #10B981;
+    position: relative;
+  }
+
+  .ep-subtask-check.done::after {
+    content: '✓';
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%,-50%);
+    font-size: 9px;
+    color: white;
+    font-weight: 800;
+  }
+
+  .ep-subtask-text { flex: 1; }
+  .ep-subtask-text.done { text-decoration: line-through; color: var(--light); }
+
+  .ep-subtask-date {
+    font-size: 10px;
+    color: var(--lighter);
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    padding: 1px 6px;
+  }
+
+  .ep-add-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 10px;
+    border: 1.5px dashed var(--border);
+    border-radius: 9px;
+    font-size: 12px;
+    color: var(--light);
+  }
+
+  /* ─── Health Status ───────────────────────────────── */
+  .health-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin: 20px 0;
+  }
+
+  .health-card {
+    border-radius: 14px;
+    border: 1px solid;
+    padding: 16px;
+  }
+
+  .health-card.green { background: #ECFDF5; border-color: #A7F3D0; }
+  .health-card.yellow { background: #FFFBEB; border-color: #FDE68A; }
+  .health-card.red { background: #FFF1F2; border-color: #FECDD3; }
+
+  .health-card-dot {
+    width: 12px; height: 12px;
+    border-radius: 50%;
+    margin-bottom: 10px;
+  }
+
+  .green  .health-card-dot { background: #10B981; box-shadow: 0 0 0 4px rgba(16,185,129,0.15); }
+  .yellow .health-card-dot { background: #F59E0B; box-shadow: 0 0 0 4px rgba(245,158,11,0.15); }
+  .red    .health-card-dot { background: #F43F5E; box-shadow: 0 0 0 4px rgba(244,63,94,0.15); }
+
+  .health-card-label {
+    font-size: 14px;
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+
+  .green  .health-card-label { color: #065F46; }
+  .yellow .health-card-label { color: #92400E; }
+  .red    .health-card-label { color: #9F1239; }
+
+  .health-card-desc { font-size: 12px; line-height: 1.5; }
+  .green  .health-card-desc { color: #059669; }
+  .yellow .health-card-desc { color: #D97706; }
+  .red    .health-card-desc { color: #E11D48; }
+
+  .health-auto-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: #FFF8EC;
+    border: 1px solid #FDE68A;
+    border-radius: 20px;
+    padding: 5px 14px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #92400E;
+    margin-top: 12px;
+  }
+
+  /* ─── Share Modal Mockup ──────────────────────────── */
+  .share-modal {
+    background: var(--bg-card);
+    border-radius: 18px;
+    border: 1px solid var(--border-md);
+    box-shadow: 0 12px 40px rgba(28,20,16,0.15);
+    max-width: 360px;
+    margin: 0 auto;
+    overflow: hidden;
+  }
+
+  .sm-header {
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--border-md);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .sm-title { font-size: 14px; font-weight: 700; color: var(--dark); }
+
+  .sm-body { padding: 14px 18px; }
+
+  .sm-section-label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    color: var(--light);
+    margin-bottom: 8px;
+  }
+
+  .sm-member-list { display: flex; flex-direction: column; gap: 6px; }
+
+  .sm-member {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 10px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: var(--bg-subtle);
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+
+  .sm-member.checked {
+    background: #F5F3FF;
+    border-color: #DDD6FE;
+  }
+
+  .sm-member-avatar {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 800;
+    color: white;
+    flex-shrink: 0;
+  }
+
+  .sm-member-name { flex: 1; font-size: 13px; font-weight: 600; color: var(--dark); }
+  .sm-member-role { font-size: 11px; color: var(--light); }
+
+  .sm-check {
+    width: 18px; height: 18px;
+    border-radius: 5px;
+    border: 1.5px solid var(--border);
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .sm-check.checked {
+    background: #7C3AED;
+    border-color: #7C3AED;
+    color: white;
+    font-size: 10px;
+    font-weight: 800;
+  }
+
+  .sm-footer {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    padding: 12px 18px 16px;
+    border-top: 1px solid var(--border-md);
+  }
+
+  .sm-btn-cancel {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 9px;
+    padding: 9px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--mid);
+    text-align: center;
+  }
+
+  .sm-btn-confirm {
+    background: #7C3AED;
+    border-radius: 9px;
+    padding: 9px;
+    font-size: 12px;
+    font-weight: 700;
+    color: white;
+    text-align: center;
+  }
+
+  /* ─── Sort Pills Mockup ───────────────────────────── */
+  .sort-demo {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    padding: 20px;
+    background: var(--bg-card);
+    border-radius: 14px;
+    border: 1px solid var(--border-md);
+    align-items: center;
+  }
+
+  .sort-label-txt { font-size: 12px; color: var(--light); font-weight: 600; margin-right: 4px; }
+
+  .sort-pill {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    border-radius: 20px;
+    padding: 5px 12px;
+    font-size: 12px;
+    font-weight: 600;
+    border: 1px solid var(--border);
+    background: var(--bg-subtle);
+    color: var(--mid);
+  }
+
+  .sort-pill.active {
+    background: var(--dark);
+    border-color: var(--dark);
+    color: white;
+  }
+
+  .sort-pill .sort-arrow { font-size: 10px; opacity: 0.7; }
+
+  /* ─── Completed Section Mockup ────────────────────── */
+  .completed-mockup {
+    background: var(--bg-card);
+    border-radius: 14px;
+    border: 1px solid var(--border-md);
+    overflow: hidden;
+  }
+
+  .cm-toggle {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 14px 16px;
+    cursor: pointer;
+    border-bottom: 1px solid transparent;
+  }
+
+  .cm-toggle.open {
+    border-bottom-color: var(--border-md);
+    background: var(--bg-subtle);
+  }
+
+  .cm-chevron {
+    width: 20px; height: 20px;
+    border-radius: 6px;
+    background: var(--border-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    color: var(--mid);
+    transition: transform 0.2s;
+  }
+
+  .cm-chevron.open { transform: rotate(90deg); }
+
+  .cm-toggle-label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    color: var(--mid);
+    flex: 1;
+  }
+
+  .cm-toggle-count {
+    background: #ECFDF5;
+    border: 1px solid #A7F3D0;
+    border-radius: 12px;
+    padding: 1px 8px;
+    font-size: 10px;
+    font-weight: 700;
+    color: #065F46;
+  }
+
+  .cm-card {
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border-bottom: 1px solid var(--border-md);
+  }
+
+  .cm-card:last-child { border-bottom: none; }
+
+  .cm-check-done {
+    width: 20px; height: 20px;
+    border-radius: 50%;
+    background: #10B981;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    color: white;
+    font-weight: 800;
+    flex-shrink: 0;
+  }
+
+  .cm-card-name { flex: 1; font-size: 13px; font-weight: 600; color: var(--light); text-decoration: line-through; }
+  .cm-card-date { font-size: 11px; color: var(--lighter); }
+
+  /* ─── Two-column layout inside section ───────────────── */
+  .two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    align-items: start;
+    margin: 20px 0;
+  }
+
+  .col-text { }
+  .col-mock { }
+
+  /* ─── Divider ─────────────────────────────────────── */
+  .divider {
+    height: 1px;
+    background: var(--border-md);
+    margin: 60px 0;
+  }
+
+  /* ─── Inline badge ────────────────────────────────── */
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    border-radius: 6px;
+    padding: 2px 8px;
+    font-size: 12px;
+    font-weight: 700;
+  }
+
+  .badge-purple {
+    background: #F5F3FF;
+    border: 1px solid #DDD6FE;
+    color: #6D28D9;
+  }
+
+  .badge-amber {
+    background: #FFFBEB;
+    border: 1px solid #FDE68A;
+    color: #D97706;
+  }
+
+  .badge-green {
+    background: #ECFDF5;
+    border: 1px solid #A7F3D0;
+    color: #065F46;
+  }
+
+  /* ─── Table of contents ───────────────────────────── */
+  .toc {
+    background: var(--bg-subtle);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 20px 24px;
+    margin-bottom: 48px;
+  }
+
+  .toc-title {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--light);
+    margin-bottom: 12px;
+  }
+
+  .toc-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+  }
+
+  .toc-item {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 7px 10px;
+    border-radius: 9px;
+    text-decoration: none;
+    color: var(--mid);
+    font-size: 13px;
+    font-weight: 500;
+    transition: background 0.15s, color 0.15s;
+  }
+
+  .toc-item:hover {
+    background: var(--bg);
+    color: var(--dark);
+  }
+
+  .toc-item-num {
+    width: 20px; height: 20px;
+    border-radius: 6px;
+    background: var(--border-md);
+    color: var(--mid);
+    font-size: 10px;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  /* ─── Responsive ──────────────────────────────────── */
+  @media (max-width: 900px) {
+    .sidebar { display: none; }
+    .main { padding: 24px 20px 80px; }
+    .two-col { grid-template-columns: 1fr; }
+    .dash-stats { grid-template-columns: 1fr 1fr; }
+    .health-grid { grid-template-columns: 1fr; }
+    .toc-grid { grid-template-columns: repeat(2, 1fr); }
+    .cover { padding: 36px 28px 32px; }
+    .cover h1 { font-size: 28px; }
+  }
+
+  @media (max-width: 520px) {
+    .toc-grid { grid-template-columns: 1fr; }
+    .modal-row { grid-template-columns: 1fr; }
+    .sm-footer { grid-template-columns: 1fr; }
+    .modal-footer { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+
+  <!-- Sidebar -->
+  <nav class="sidebar">
+    <div class="sidebar-logo">
+      <div class="sidebar-logo-icon">
+        <span></span><span></span><span></span><span></span>
+      </div>
+      <div>
+        <div class="sidebar-logo-text">OD 项目控制塔</div>
+        <div class="sidebar-logo-sub">使用指南</div>
+      </div>
+    </div>
+
+    <div class="sidebar-label">目录</div>
+    <ul class="sidebar-nav">
+      <li><a href="#login"><span class="nav-icon">🔑</span> 登录</a></li>
+      <li><a href="#dashboard"><span class="nav-icon">🗂</span> 主界面</a></li>
+      <li><a href="#new-project"><span class="nav-icon">➕</span> 新建项目</a></li>
+      <li><a href="#edit-project"><span class="nav-icon">✏️</span> 编辑项目</a></li>
+      <li><a href="#health"><span class="nav-icon">🟢</span> 健康状态</a></li>
+      <li><a href="#share"><span class="nav-icon">↗️</span> 项目共享</a></li>
+      <li><a href="#sort"><span class="nav-icon">↕️</span> 排序功能</a></li>
+      <li><a href="#completed"><span class="nav-icon">✅</span> 已完成项目</a></li>
+    </ul>
+  </nav>
+
+  <!-- Main -->
+  <main class="main">
+
+    <!-- Cover -->
+    <div class="cover">
+      <div class="cover-badge">📋 内部工具文档</div>
+      <h1>OD 项目控制塔<br>使用指南</h1>
+      <p class="cover-sub">HR OD 团队多项目进度管理看板 · 完整操作说明</p>
+      <div class="cover-meta">
+        <div class="cover-meta-item">📅 <strong>版本 1.1</strong></div>
+        <div class="cover-meta-item">👥 <strong>适用：OD 团队全体成员</strong></div>
+        <div class="cover-meta-item">🌐 <strong>hrod-project.xyz</strong></div>
+      </div>
+    </div>
+
+    <!-- TOC -->
+    <div class="toc">
+      <div class="toc-title">快速导航</div>
+      <div class="toc-grid">
+        <a class="toc-item" href="#login"><span class="toc-item-num">1</span>登录</a>
+        <a class="toc-item" href="#dashboard"><span class="toc-item-num">2</span>主界面</a>
+        <a class="toc-item" href="#new-project"><span class="toc-item-num">3</span>新建项目</a>
+        <a class="toc-item" href="#edit-project"><span class="toc-item-num">4</span>编辑项目</a>
+        <a class="toc-item" href="#health"><span class="toc-item-num">5</span>健康状态</a>
+        <a class="toc-item" href="#share"><span class="toc-item-num">6</span>项目共享</a>
+        <a class="toc-item" href="#sort"><span class="toc-item-num">7</span>排序功能</a>
+        <a class="toc-item" href="#completed"><span class="toc-item-num">8</span>已完成项目</a>
+      </div>
+    </div>
+
+    <!-- 1. Login -->
+    <section id="login" class="section">
+      <div class="section-header">
+        <div class="section-num">1</div>
+        <div class="section-header-text">
+          <h2>🔑 登录</h2>
+          <p>使用公司邮箱登录，账号由管理员统一配置，无需注册</p>
+        </div>
+      </div>
+
+      <div class="two-col">
+        <div class="col-text">
+          <div class="steps">
+            <div class="step">
+              <div class="step-circle">1</div>
+              <div class="step-body">在浏览器打开 <strong>hrod-project.xyz</strong>，进入登录页面</div>
+            </div>
+            <div class="step">
+              <div class="step-circle">2</div>
+              <div class="step-body">输入<strong>公司邮箱</strong>地址（如 daxing@company.com）</div>
+            </div>
+            <div class="step">
+              <div class="step-circle">3</div>
+              <div class="step-body">初始密码为 <strong>1234</strong>，登录后请立即修改</div>
+            </div>
+            <div class="step">
+              <div class="step-circle">4</div>
+              <div class="step-body">点击右上角<strong>头像</strong> → <strong>修改密码</strong>，设置专属密码</div>
+            </div>
+          </div>
+
+          <div class="notice notice-amber">
+            <div class="notice-icon">⚠️</div>
+            <div>初次登录后请<strong>立即修改密码</strong>，避免使用默认密码 1234。</div>
+          </div>
+
+          <div class="notice notice-blue">
+            <div class="notice-icon">📱</div>
+            <div>支持电脑和手机浏览器，推荐使用 <strong>Chrome</strong> 或 <strong>Safari</strong>。</div>
+          </div>
+        </div>
+
+        <div class="col-mock">
+          <div class="mockup-wrap">
+            <div class="mockup-label">登录界面示意</div>
+            <div class="login-mockup">
+              <div class="lm-header">
+                <div class="lm-logo">
+                  <span></span><span></span><span></span><span></span>
+                </div>
+                <div class="lm-title">OD 项目控制塔</div>
+                <div class="lm-sub">HR OD 团队内部工具</div>
+              </div>
+              <div class="lm-body">
+                <div class="lm-field">
+                  <div class="lm-field-label">邮箱地址</div>
+                  <div class="lm-input"><span>📧</span><span>daxing@company.com</span></div>
+                </div>
+                <div class="lm-field">
+                  <div class="lm-field-label">密码</div>
+                  <div class="lm-input"><span>🔒</span><span class="lm-input-dots">••••</span></div>
+                </div>
+                <div class="lm-btn">登录</div>
+                <div class="lm-hint">仅限团队内 6 位成员 · 如遇问题联系管理员</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="divider"></div>
+
+    <!-- 2. Dashboard -->
+    <section id="dashboard" class="section">
+      <div class="section-header">
+        <div class="section-num">2</div>
+        <div class="section-header-text">
+          <h2>🗂 主界面总览</h2>
+          <p>登录后进入项目看板，一眼掌握所有项目状态</p>
+        </div>
+      </div>
+
+      <div class="mockup-wrap">
+        <div class="mockup-label">主界面示意</div>
+        <div class="dash-mockup">
+          <!-- Topbar -->
+          <div class="dash-topbar">
+            <div class="dash-topbar-logo">
+              <div class="dash-topbar-logo-icon">
+                <span></span><span></span><span></span><span></span>
+              </div>
+              OD 项目控制塔
+            </div>
+            <div class="dash-topbar-right">
+              <div class="dash-new-btn">＋ 新建项目</div>
+              <div class="dash-avatar">D</div>
+            </div>
+          </div>
+
+          <div class="dash-body">
+            <!-- Stats -->
+            <div class="dash-stats">
+              <div class="dash-stat" style="border-top:2px solid #0EA5E9">
+                <div class="dash-stat-label">进行中项目</div>
+                <div class="dash-stat-val">4</div>
+                <div class="dash-stat-sub">↑ 统计卡片区域</div>
+              </div>
+              <div class="dash-stat" style="border-top:2px solid #F59E0B">
+                <div class="dash-stat-label">存在风险</div>
+                <div class="dash-stat-val" style="color:#B45309">1</div>
+                <div class="dash-stat-sub">需重点关注</div>
+              </div>
+              <div class="dash-stat" style="border-top:2px solid #F43F5E">
+                <div class="dash-stat-label">逾期及本周到期</div>
+                <div class="dash-stat-val" style="color:#BE123C">3</div>
+                <div class="dash-stat-sub">已逾期或7天内到期</div>
+              </div>
+            </div>
+
+            <!-- Section row -->
+            <div class="dash-section-row">
+              <div class="dash-section-label">
+                进行中 <span class="dash-section-count">4</span>
+                <span style="font-size:10px;color:var(--lighter);">← 分区标题</span>
+              </div>
+              <div class="dash-sort-pills">
+                <div class="dash-sort-pill active">截止日期 ↑</div>
+                <div class="dash-sort-pill">健康状态</div>
+                <div class="dash-sort-pill">最近更新</div>
+              </div>
+            </div>
+
+            <!-- Cards -->
+            <div class="dash-cards">
+              <div class="dash-card">
+                <div class="dash-card-top">
+                  <div>
+                    <div class="dash-card-name">2025 管理者领导力项目</div>
+                    <div class="dash-card-owner">负责人: daxing · 截止 2025-09-30</div>
+                  </div>
+                  <div class="dash-health green"><span class="dash-health-dot"></span>正常</div>
+                </div>
+                <div class="dash-stage-dots">
+                  <div class="dash-stage-dot" style="width:28px;background:#F59E0B"></div>
+                  <div class="dash-stage-dot" style="width:12px;background:#E5DDD3"></div>
+                  <div class="dash-stage-dot" style="width:12px;background:#E5DDD3"></div>
+                  <div class="dash-stage-dot" style="width:12px;background:#E5DDD3"></div>
+                  <span style="font-size:10px;color:var(--lighter);margin-left:6px;">← 阶段进度条</span>
+                </div>
+                <div class="dash-prog-bar"><div class="dash-prog-fill" style="width:35%"></div></div>
+              </div>
+
+              <div class="dash-card" style="opacity:0.6">
+                <div class="dash-card-top">
+                  <div>
+                    <div class="dash-card-name">新员工融合培训计划</div>
+                    <div class="dash-card-owner">负责人: zhihong · 截止 2025-07-15</div>
+                  </div>
+                  <div class="dash-health yellow"><span class="dash-health-dot"></span>有风险</div>
+                </div>
+                <div class="dash-stage-dots">
+                  <div class="dash-stage-dot" style="width:12px;background:#B5ADA5"></div>
+                  <div class="dash-stage-dot" style="width:28px;background:#F59E0B"></div>
+                  <div class="dash-stage-dot" style="width:12px;background:#E5DDD3"></div>
+                </div>
+                <div class="dash-prog-bar"><div class="dash-prog-fill" style="width:58%"></div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="steps" style="margin-top:20px">
+        <div class="step">
+          <div class="step-circle" style="background:var(--mid)">A</div>
+          <div class="step-body"><strong>统计卡片区域</strong>：顶部三张卡片，分别显示「进行中项目数」「存在风险项目数」「逾期及本周到期子任务数（已逾期 + 7 天内到期）」，实时更新。</div>
+        </div>
+        <div class="step">
+          <div class="step-circle" style="background:var(--mid)">B</div>
+          <div class="step-body"><strong>项目卡片</strong>：每个项目一张卡片，显示名称、负责人、截止日期、健康状态、阶段进度和整体进度条。</div>
+        </div>
+        <div class="step">
+          <div class="step-circle" style="background:var(--mid)">C</div>
+          <div class="step-body"><strong>排序按钮</strong>：右上角的三个 pill 按钮，点击切换排序方式（截止日期 / 健康状态 / 最近更新）。</div>
+        </div>
+        <div class="step">
+          <div class="step-circle" style="background:var(--mid)">D</div>
+          <div class="step-body"><strong>新建项目</strong>：右上角深色「＋ 新建项目」按钮，点击打开新建弹窗。</div>
+        </div>
+      </div>
+    </section>
+
+    <div class="divider"></div>
+
+    <!-- 3. New Project -->
+    <section id="new-project" class="section">
+      <div class="section-header">
+        <div class="section-num">3</div>
+        <div class="section-header-text">
+          <h2>➕ 新建项目</h2>
+          <p>填写基本信息，一分钟内创建并追踪新项目</p>
+        </div>
+      </div>
+
+      <div class="two-col">
+        <div class="col-mock">
+          <div class="mockup-wrap">
+            <div class="mockup-label">新建项目弹窗</div>
+            <div class="modal-mockup">
+              <div class="modal-card">
+                <div class="modal-header">
+                  <span class="modal-title">新建项目</span>
+                  <span class="modal-x">✕</span>
+                </div>
+                <div class="modal-body">
+                  <div class="modal-field">
+                    <div class="modal-field-label">项目名称 <span class="req">*</span></div>
+                    <div class="modal-input placeholder">例：2025 管理者领导力项目</div>
+                  </div>
+                  <div class="modal-field">
+                    <div class="modal-field-label">负责人 <span class="req">*</span></div>
+                    <div class="modal-input">daxing</div>
+                  </div>
+                  <div class="modal-row">
+                    <div class="modal-field">
+                      <div class="modal-field-label">健康状态</div>
+                      <div class="modal-health-pills">
+                        <div class="modal-health-pill green"><span class="dot"></span>正常</div>
+                        <div class="modal-health-pill yellow"><span class="dot"></span>风险</div>
+                        <div class="modal-health-pill red"><span class="dot"></span>延期</div>
+                      </div>
+                    </div>
+                    <div class="modal-field">
+                      <div class="modal-field-label">完成日期 <span class="req">*</span></div>
+                      <div class="modal-input">2025-09-30</div>
+                    </div>
+                  </div>
+                  <div class="modal-field">
+                    <div class="modal-field-label">阶段设置 <span class="req">*</span></div>
+                    <div class="modal-stage-tags">
+                      <div class="modal-stage-tag inactive" style="font-size:10px">⚙ 选择预设 ▾</div>
+                      <div class="modal-stage-tag inactive">+ 启动</div>
+                      <div class="modal-stage-tag inactive">+ 设计</div>
+                    </div>
+                    <div style="display:flex;flex-wrap:wrap;gap:5px;margin-top:6px">
+                      <div class="modal-stage-tag active">① 需求调研</div>
+                      <div class="modal-stage-tag inactive">② 方案设计</div>
+                      <div class="modal-stage-tag inactive">③ 实施</div>
+                      <div class="modal-stage-tag inactive">④ 复盘</div>
+                    </div>
+                  </div>
+                  <div class="modal-field">
+                    <div class="modal-field-label">当前所处阶段</div>
+                    <div class="modal-stage-tags">
+                      <div class="modal-stage-tag active">① 需求调研</div>
+                      <div class="modal-stage-tag inactive">② 方案设计</div>
+                      <div class="modal-stage-tag inactive">③ 实施</div>
+                      <div class="modal-stage-tag inactive">④ 复盘</div>
+                    </div>
+                  </div>
+                </div>
+                <div class="modal-footer">
+                  <div class="modal-btn-cancel">取消</div>
+                  <div class="modal-btn-submit">创建项目</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-text">
+          <div class="steps">
+            <div class="step">
+              <div class="step-circle">1</div>
+              <div class="step-body">点击右上角 <strong>「＋ 新建项目」</strong>，弹出创建面板</div>
+            </div>
+            <div class="step">
+              <div class="step-circle">2</div>
+              <div class="step-body">填写<strong>项目名称</strong>（必填）和<strong>负责人</strong>（必填）</div>
+            </div>
+            <div class="step">
+              <div class="step-circle">3</div>
+              <div class="step-body">选择<strong>健康状态</strong>（默认「正常」）</div>
+            </div>
+            <div class="step">
+              <div class="step-circle">4</div>
+              <div class="step-body">设置<strong>预期完成日期</strong>（必填）</div>
+            </div>
+            <div class="step">
+              <div class="step-circle">5</div>
+              <div class="step-body">配置<strong>阶段</strong>：可使用预设模板（如「通用四阶段」），也可自定义添加/删除阶段名称</div>
+            </div>
+            <div class="step">
+              <div class="step-circle">6</div>
+              <div class="step-body">选择项目<strong>当前所处阶段</strong></div>
+            </div>
+            <div class="step">
+              <div class="step-circle">7</div>
+              <div class="step-body">（选填）输入项目描述，点击 <strong>「创建项目」</strong></div>
+            </div>
+          </div>
+
+          <div class="notice notice-green">
+            <div class="notice-icon">💡</div>
+            <div>阶段设置有多种预设可选（通用四阶段、培训项目、咨询项目等），选好后仍可手动增删。</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="divider"></div>
+
+    <!-- 4. Edit Project -->
+    <section id="edit-project" class="section">
+      <div class="section-header">
+        <div class="section-num">4</div>
+        <div class="section-header-text">
+          <h2>✏️ 编辑项目</h2>
+          <p>点击任意项目卡片，展开详细编辑面板，实时同步所有成员</p>
+        </div>
+      </div>
+
+      <div class="mockup-wrap">
+        <div class="mockup-label">项目详情 / 编辑面板</div>
+        <div class="edit-panel">
+          <div class="ep-header">
+            <div>
+              <div class="ep-title">2025 管理者领导力项目</div>
+              <div class="ep-owner">负责人: daxing · 截止 2025-09-30</div>
+            </div>
+            <div class="dash-health green" style="font-size:12px"><span class="dash-health-dot"></span>正常</div>
+          </div>
+          <div class="ep-body">
+
+            <!-- Progress slider -->
+            <div class="ep-row">
+              <div class="ep-label">整体进度</div>
+              <div class="ep-val">35%</div>
+            </div>
+            <div class="ep-slider-wrap">
+              <div class="ep-slider-track">
+                <div class="ep-slider-fill" style="width:35%">
+                  <div class="ep-slider-thumb"></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Stage selector -->
+            <div class="ep-label" style="margin-bottom:8px">当前阶段</div>
+            <div class="ep-stage-btns">
+              <div class="ep-stage-btn done"><span class="ep-stage-btn-num">1</span>启动</div>
+              <div class="ep-stage-btn active"><span class="ep-stage-btn-num">2</span>需求调研</div>
+              <div class="ep-stage-btn todo"><span class="ep-stage-btn-num">3</span>方案设计</div>
+              <div class="ep-stage-btn todo"><span class="ep-stage-btn-num">4</span>实施复盘</div>
+            </div>
+            <!-- Stage due dates -->
+            <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px">
+              <div style="display:flex;align-items:center;gap:4px;background:#F9F7F3;border:1px solid #E5DDD3;border-radius:7px;padding:3px 8px;font-size:10px;color:var(--mid)">
+                <span>📅</span><span style="color:var(--lighter)">启动 —</span><span>6/01</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:4px;background:#FFF7ED;border:1px solid #FDE68A;border-radius:7px;padding:3px 8px;font-size:10px;color:#92400E">
+                <span>📅</span><span>需求调研</span><span style="font-weight:700">7/15</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:4px;background:#F9F7F3;border:1px dashed #E5DDD3;border-radius:7px;padding:3px 8px;font-size:10px;color:var(--lighter)">
+                <span>＋ 方案设计 设置截止</span>
+              </div>
+            </div>
+
+            <!-- Subtasks -->
+            <div class="ep-label" style="margin:14px 0 8px">子任务（当前阶段）</div>
+            <div class="ep-subtask-list">
+              <div class="ep-subtask">
+                <div class="ep-subtask-check done"></div>
+                <div class="ep-subtask-text done">访谈 10 名管理者，收集痛点</div>
+                <div class="ep-subtask-date" style="color:#9F1239;background:#FFF1F2;border-color:#FECDD3">6/15 已逾期</div>
+              </div>
+              <div class="ep-subtask">
+                <div class="ep-subtask-check"></div>
+                <div class="ep-subtask-text">完成需求分析报告</div>
+                <div class="ep-subtask-date" style="background:#FFFBEB;border-color:#FDE68A;color:#92400E;cursor:pointer" title="点击修改截止日期">📅 7/01</div>
+              </div>
+              <div class="ep-subtask">
+                <div class="ep-subtask-check"></div>
+                <div class="ep-subtask-text">与业务 BP 对齐核心需求</div>
+                <div class="ep-subtask-date" style="color:var(--lighter);cursor:pointer" title="点击设置截止日期">＋ 设置截止</div>
+              </div>
+            </div>
+            <div class="ep-add-row">
+              <span style="font-size:14px">＋</span>
+              <span>添加子任务…</span>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <div class="steps" style="margin-top:24px">
+        <div class="step">
+          <div class="step-circle">①</div>
+          <div class="step-body"><strong>整体进度滑块</strong>：拖动滑块调整项目整体完成百分比（0–100%）。当进度达到 100% 时，项目自动归入「已完成」区域。</div>
+        </div>
+        <div class="step">
+          <div class="step-circle">②</div>
+          <div class="step-body"><strong>阶段切换</strong>：点击阶段按钮切换当前所处阶段。已过阶段显示为灰色，当前阶段高亮深色，未来阶段为浅色。</div>
+        </div>
+        <div class="step">
+          <div class="step-circle">③</div>
+          <div class="step-body"><strong>阶段截止日期</strong>：每个阶段可单独设置截止日期。点击阶段名称下方的日期标签即可修改，不可超过项目总截止日期。临近或逾期的阶段日期会高亮为琥珀色提醒。</div>
+        </div>
+        <div class="step">
+          <div class="step-circle">④</div>
+          <div class="step-body"><strong>修改阶段配置</strong>：在编辑面板内可展开阶段编辑器，添加、删除或重命名阶段，同时保留原有子任务数据。</div>
+        </div>
+        <div class="step">
+          <div class="step-circle">⑤</div>
+          <div class="step-body"><strong>子任务</strong>：每个阶段可添加多个子任务，设置截止日期，勾选完成后自动划线。子任务仅属于当前阶段，切换阶段后显示对应子任务。</div>
+        </div>
+        <div class="step">
+          <div class="step-circle">⑥</div>
+          <div class="step-body"><strong>子任务截止日期内联编辑</strong>：点击子任务右侧的日期标签（或「＋ 设置截止」），直接在行内修改日期，按 Enter 或点击其他区域保存，按 Esc 取消。逾期子任务日期显示为红色。</div>
+        </div>
+      </div>
+
+      <div class="notice notice-blue">
+        <div class="notice-icon">💾</div>
+        <div>所有修改<strong>即时保存</strong>到云端，无需手动点击保存按钮，其他成员刷新页面后即可看到最新状态。</div>
+      </div>
+    </section>
+
+    <div class="divider"></div>
+
+    <!-- 5. Health Status -->
+    <section id="health" class="section">
+      <div class="section-header">
+        <div class="section-num">5</div>
+        <div class="section-header-text">
+          <h2>🟢 健康状态</h2>
+          <p>三色标签帮助团队快速识别项目风险，支持手动设置与自动检测</p>
+        </div>
+      </div>
+
+      <div class="health-grid">
+        <div class="health-card green">
+          <div class="health-card-dot"></div>
+          <div class="health-card-label">正常</div>
+          <div class="health-card-desc">项目进展顺利，无明显风险，预计按时完成。</div>
+        </div>
+        <div class="health-card yellow">
+          <div class="health-card-dot"></div>
+          <div class="health-card-label">有风险</div>
+          <div class="health-card-desc">项目存在潜在风险，需要关注，可能影响按时交付。</div>
+        </div>
+        <div class="health-card red">
+          <div class="health-card-dot"></div>
+          <div class="health-card-label">延期</div>
+          <div class="health-card-desc">项目已超出预期完成日期，或明确判断无法按时完成。</div>
+        </div>
+      </div>
+
+      <div class="notice notice-amber">
+        <div class="notice-icon">⚡</div>
+        <div>
+          <strong>自动检测</strong>：当项目截止日期已过但进度尚未达到 100%，系统会在卡片上显示<strong>「已逾期」</strong>红色标记，提醒相关成员关注。健康状态标签仍由成员手动设置，自动逾期提示作为额外信息叠加显示。
+        </div>
+      </div>
+
+      <div class="steps" style="margin-top:20px">
+        <div class="step">
+          <div class="step-circle">1</div>
+          <div class="step-body">在项目卡片编辑面板中，点击顶部<strong>健康状态</strong>标签即可切换</div>
+        </div>
+        <div class="step">
+          <div class="step-circle">2</div>
+          <div class="step-body">也可在<strong>新建项目</strong>时预设健康状态</div>
+        </div>
+        <div class="step">
+          <div class="step-circle">3</div>
+          <div class="step-body">健康状态变更后，主界面统计卡片（有风险 / 已延期）数量<strong>实时更新</strong></div>
+        </div>
+      </div>
+    </section>
+
+    <div class="divider"></div>
+
+    <!-- 6. Share -->
+    <section id="share" class="section">
+      <div class="section-header">
+        <div class="section-num">6</div>
+        <div class="section-header-text">
+          <h2>↗️ 项目共享</h2>
+          <p>主动将项目共享给指定成员，被共享方可查看和编辑</p>
+        </div>
+      </div>
+
+      <div class="two-col">
+        <div class="col-text">
+          <div class="steps">
+            <div class="step">
+              <div class="step-circle">1</div>
+              <div class="step-body">鼠标悬停（手机长按）项目卡片，右上角出现操作按钮</div>
+            </div>
+            <div class="step">
+              <div class="step-circle">2</div>
+              <div class="step-body">点击<strong>「共享」</strong>按钮（仅项目创建者可见）</div>
+            </div>
+            <div class="step">
+              <div class="step-circle">3</div>
+              <div class="step-body">在弹窗中<strong>勾选</strong>要共享的成员（可多选）</div>
+            </div>
+            <div class="step">
+              <div class="step-circle">4</div>
+              <div class="step-body">点击底部按钮保存，按钮文字会根据操作动态变化：首次共享显示<strong>「确认共享（N 人）」</strong>；修改了勾选项则显示<strong>「保存更改（N 人）」</strong>；若全部取消勾选则显示<strong>「取消全部共享」</strong></div>
+            </div>
+          </div>
+
+          <div class="notice notice-amber">
+            <div class="notice-icon">🔒</div>
+            <div>项目默认<strong>仅创建者可见</strong>。被共享的项目在对方界面带有 <span class="badge badge-purple">来自 TA</span> 紫色标签。</div>
+          </div>
+
+          <div class="notice notice-blue">
+            <div class="notice-icon">↩️</div>
+            <div><strong>取消共享</strong>：重新打开共享弹窗，取消勾选对应成员后点击「保存更改」即可移除共享权限。</div>
+          </div>
+        </div>
+
+        <div class="col-mock">
+          <div class="mockup-wrap">
+            <div class="mockup-label">共享弹窗示意</div>
+            <div class="share-modal">
+              <div class="sm-header">
+                <span class="sm-title">共享项目</span>
+                <span class="modal-x">✕</span>
+              </div>
+              <div class="sm-body">
+                <div class="sm-section-label">选择要共享的成员</div>
+                <div class="sm-member-list">
+                  <div class="sm-member checked">
+                    <div class="sm-member-avatar" style="background:linear-gradient(135deg,#7C3AED,#5B21B6)">Z</div>
+                    <div>
+                      <div class="sm-member-name">zhihong</div>
+                      <div class="sm-member-role">OD 团队成员</div>
+                    </div>
+                    <div class="sm-check checked">✓</div>
+                  </div>
+                  <div class="sm-member checked">
+                    <div class="sm-member-avatar" style="background:linear-gradient(135deg,#0891B2,#0E7490)">Y</div>
+                    <div>
+                      <div class="sm-member-name">yawei</div>
+                      <div class="sm-member-role">OD 团队成员</div>
+                    </div>
+                    <div class="sm-check checked">✓</div>
+                  </div>
+                  <div class="sm-member">
+                    <div class="sm-member-avatar" style="background:linear-gradient(135deg,#D97706,#B45309)">X</div>
+                    <div>
+                      <div class="sm-member-name">xiaomei</div>
+                      <div class="sm-member-role">OD 团队成员</div>
+                    </div>
+                    <div class="sm-check"></div>
+                  </div>
+                </div>
+              </div>
+              <div class="sm-footer">
+                <div class="sm-btn-cancel">取消</div>
+                <div class="sm-btn-confirm">保存更改（2 人）</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="divider"></div>
+
+    <!-- 7. Sort -->
+    <section id="sort" class="section">
+      <div class="section-header">
+        <div class="section-num">7</div>
+        <div class="section-header-text">
+          <h2>↕️ 排序功能</h2>
+          <p>灵活调整项目列表顺序，快速找到最需要关注的项目</p>
+        </div>
+      </div>
+
+      <div class="mockup-wrap">
+        <div class="mockup-label">排序按钮示意</div>
+        <div class="sort-demo">
+          <span class="sort-label-txt">排序方式：</span>
+          <div class="sort-pill active">截止日期 <span class="sort-arrow">↑</span></div>
+          <div class="sort-pill">健康状态</div>
+          <div class="sort-pill">最近更新</div>
+        </div>
+      </div>
+
+      <div class="steps" style="margin-top:24px">
+        <div class="step">
+          <div class="step-circle">①</div>
+          <div class="step-body"><strong>截止日期</strong>：按预期完成日期升序 / 降序排列，帮助优先处理最紧迫的项目。再次点击切换升降序。</div>
+        </div>
+        <div class="step">
+          <div class="step-circle">②</div>
+          <div class="step-body"><strong>健康状态</strong>：按「延期 → 有风险 → 正常」优先级排列，让需要关注的项目靠前。</div>
+        </div>
+        <div class="step">
+          <div class="step-circle">③</div>
+          <div class="step-body"><strong>最近更新</strong>：按最后修改时间排列，快速找到近期活跃的项目。</div>
+        </div>
+      </div>
+
+      <div class="notice notice-blue">
+        <div class="notice-icon">💡</div>
+        <div>已激活的排序按钮显示为<strong>深色背景</strong>，并标注升降箭头。点击同一按钮可切换升 ↑ / 降 ↓ 方向，再次点击可取消排序（恢复默认顺序）。</div>
+      </div>
+    </section>
+
+    <div class="divider"></div>
+
+    <!-- 8. Completed -->
+    <section id="completed" class="section">
+      <div class="section-header">
+        <div class="section-num">8</div>
+        <div class="section-header-text">
+          <h2>✅ 已完成项目</h2>
+          <p>进度达到 100% 的项目自动归档，折叠展示不占用主界面空间</p>
+        </div>
+      </div>
+
+      <div class="mockup-wrap">
+        <div class="mockup-label">已完成区域示意</div>
+        <div class="completed-mockup">
+          <div class="cm-toggle open">
+            <div class="cm-chevron open">▶</div>
+            <div class="cm-toggle-label">已完成项目</div>
+            <div class="cm-toggle-count">2 个</div>
+          </div>
+          <div class="cm-card">
+            <div class="cm-check-done">✓</div>
+            <div class="cm-card-name">2024 Q4 绩效复盘项目</div>
+            <div class="cm-card-date">已完成</div>
+          </div>
+          <div class="cm-card">
+            <div class="cm-check-done">✓</div>
+            <div class="cm-card-name">新人入职体验优化</div>
+            <div class="cm-card-date">已完成</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="steps" style="margin-top:24px">
+        <div class="step">
+          <div class="step-circle">1</div>
+          <div class="step-body">当项目整体进度<strong>拖动至 100%</strong>，该项目自动移入「已完成」区域，不再占用主界面空间</div>
+        </div>
+        <div class="step">
+          <div class="step-circle">2</div>
+          <div class="step-body">点击「已完成项目」折叠标题，可展开 / 收起查看历史项目</div>
+        </div>
+        <div class="step">
+          <div class="step-circle">3</div>
+          <div class="step-body">若需重新激活项目，点击进入编辑面板，将进度<strong>调回 99% 以下</strong>即可</div>
+        </div>
+      </div>
+
+      <div class="notice notice-green">
+        <div class="notice-icon">🎉</div>
+        <div>已完成项目不会被删除，数据完整保留，随时可以查阅历史记录。</div>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <div style="text-align:center;padding:40px 0 20px;border-top:1px solid var(--border-md)">
+      <div style="font-size:13px;color:var(--light);margin-bottom:6px">OD 项目控制塔 · 内部使用指南</div>
+      <div style="font-size:12px;color:var(--lighter)">如有问题请联系管理员 · 仅限 HR OD 团队内部使用</div>
+    </div>
+
+  </main>
+</div>
+
+<script>
+  // Highlight active sidebar link on scroll
+  const sections = document.querySelectorAll('section[id]');
+  const links = document.querySelectorAll('.sidebar-nav a');
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        links.forEach(l => l.classList.remove('active'));
+        const active = document.querySelector(`.sidebar-nav a[href="#${entry.target.id}"]`);
+        if (active) active.classList.add('active');
+      }
+    });
+  }, { rootMargin: '-20% 0px -60% 0px' });
+
+  sections.forEach(s => observer.observe(s));
+</script>
+</body>
+</html>
