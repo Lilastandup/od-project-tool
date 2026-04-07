@@ -21,19 +21,21 @@ export default function ShareModal({
   const [selected,    setSelected]    = useState<Set<string>>(new Set());
   const [initialIds,  setInitialIds]  = useState<Set<string>>(new Set());
   const [loading,     setLoading]     = useState(false);
+  const [loadError,   setLoadError]   = useState(false);
   const [saving,      setSaving]      = useState(false);
   const [saveError,   setSaveError]   = useState<string | null>(null);
 
   useEffect(() => {
     if (!open) return;
     setLoading(true);
+    setLoadError(false);
     fetchProjectMemberIds(projectId)
       .then((ids) => {
         const s = new Set(ids);
         setSelected(s);
         setInitialIds(s);
       })
-      .catch(() => { setSelected(new Set()); setInitialIds(new Set()); })
+      .catch(() => setLoadError(true))
       .finally(() => setLoading(false));
   }, [open, projectId]);
 
@@ -92,6 +94,10 @@ export default function ShareModal({
           {loading ? (
             <div className="flex justify-center py-6">
               <Loader2 className="h-5 w-5 animate-spin text-[#C7BFB5]" />
+            </div>
+          ) : loadError ? (
+            <div className="py-6 text-center text-sm text-rose-500">
+              加载成员列表失败，请关闭后重试
             </div>
           ) : profiles.length === 0 ? (
             <p className="py-6 text-center text-sm text-[#C7BFB5]">暂无其他团队成员</p>
@@ -152,7 +158,7 @@ export default function ShareModal({
           <button
             type="button"
             onClick={handleSave}
-            disabled={saving}
+            disabled={saving || loadError}
             className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-[#1C1410] py-2.5 text-sm font-semibold text-white transition hover:bg-[#2C2318] disabled:opacity-50"
           >
             {saving && <Loader2 className="h-3.5 w-3.5 animate-spin" />}

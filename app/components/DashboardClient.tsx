@@ -85,9 +85,9 @@ export default function DashboardClient({ initialProjects, initialMilestones, us
 
   // ── Export ──────────────────────────────────────────────────
   const handleExport = useCallback(() => {
-    exportProjectsToExcel(projects, milestones);
+    exportProjectsToExcel(projects, subtasks);
     toast('success', `已导出 ${projects.length} 个项目数据`);
-  }, [projects, milestones, toast]);
+  }, [projects, subtasks, toast]);
 
   // ── CRUD handlers ───────────────────────────────────────────
   const handleCreate = useCallback(async (data: CreateProjectData) => {

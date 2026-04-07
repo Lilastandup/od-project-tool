@@ -58,7 +58,7 @@ export default function DeleteConfirmModal({ project, onClose, onConfirm }: Prop
             </span>
           </p>
           <p className="mt-1 text-center text-xs text-[#A8A29E]">
-            此操作不可撤销，项目下所有里程碑将一并删除。
+            此操作不可撤销，项目下所有子任务将一并删除。
           </p>
 
           {/* Buttons */}
