@@ -25,7 +25,7 @@ export default function StatsCards({ projects, subtasks }: Props) {
   const weekSubtaskCount = subtasks.filter((t) => {
     if (t.isCompleted || !t.dueDate) return false;
     const due = new Date(t.dueDate);
-    return due >= today && due <= weekLater;
+    return due <= weekLater;
   }).length;
 
   const cards = [
@@ -52,10 +52,10 @@ export default function StatsCards({ projects, subtasks }: Props) {
       valueColor: atRiskCount > 0 ? 'text-amber-700' : 'text-[#1C1512]',
     },
     {
-      label: '本周截止子任务',
+      label: '逾期及本周到期',
       value: weekSubtaskCount,
       unit: '项',
-      description: '7天内到期',
+      description: '已逾期或7天内到期',
       icon: CalendarClock,
       accentTop: 'bg-rose-500',
       iconBg: 'bg-rose-50',
