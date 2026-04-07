@@ -32,6 +32,7 @@ export default function EditProjectDrawer({ project, onClose, onSave }: Props) {
   const [dueDate,           setDueDate]           = useState('');
   const [editingStages,       setEditingStages]       = useState(false);
   const [editingStageDateIdx, setEditingStageDateIdx] = useState<number | null>(null);
+  const [stageDateError,      setStageDateError]      = useState<string | null>(null);
   const [loading,             setLoading]             = useState(false);
   const [subtaskLoadError,    setSubtaskLoadError]    = useState(false);
   const [subtasks,            setSubtasks]            = useState<Subtask[]>([]);
@@ -292,6 +293,12 @@ export default function EditProjectDrawer({ project, onClose, onSave }: Props) {
                               className={`bg-transparent outline-none text-[11px] ${isActive ? 'text-white' : 'text-[#1C1512]'}`}
                               onBlur={(e) => {
                                 const val = e.target.value;
+                                if (val && dueDate && val > dueDate) {
+                                  setStageDateError(`阶段截止日期不能晚于项目截止日期（${dueDate}）`);
+                                  setTimeout(() => setStageDateError(null), 4000);
+                                  setEditingStageDateIdx(null);
+                                  return;
+                                }
                                 setStageDueDates((prev) => {
                                   const next = [...prev];
                                   next[i] = val;
@@ -327,6 +334,10 @@ export default function EditProjectDrawer({ project, onClose, onSave }: Props) {
                   })}
                 </div>
               </div>
+            )}
+
+            {stageDateError && (
+              <p className="text-xs text-rose-500">{stageDateError}</p>
             )}
 
             {/* ── 子任务面板（当前阶段）── */}
