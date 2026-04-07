@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OD 项目控制塔 · 快速开始</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Plus Jakarta Sans', 'Noto Serif SC', system-ui, sans-serif;
+    background: #F4EFE6;
+    color: #1C1512;
+    min-height: 100vh;
+    padding: 40px 20px 60px;
+  }
+
+  .card {
+    background: #FFFCF8;
+    border: 1px solid #E5DDD3;
+    border-radius: 20px;
+    max-width: 560px;
+    margin: 0 auto;
+    overflow: hidden;
+    box-shadow: 0 8px 40px rgba(28,21,18,0.10);
+  }
+
+  /* Header */
+  .header {
+    background: #1C1410;
+    padding: 36px 32px 32px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .header::before {
+    content: '';
+    position: absolute;
+    top: -40px; right: -40px;
+    width: 180px; height: 180px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(245,158,11,0.2) 0%, transparent 70%);
+  }
+
+  .logo-row {
+    display: flex; align-items: center; gap: 12px;
+    margin-bottom: 20px;
+  }
+
+  .logo-icon {
+    width: 40px; height: 40px;
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 11px;
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 4px; padding: 9px;
+  }
+  .logo-icon span { border-radius: 2px; background: #F59E0B; }
+  .logo-icon span:nth-child(2),
+  .logo-icon span:nth-child(3) { opacity: 0.3; }
+
+  .logo-text { color: white; font-size: 17px; font-weight: 700; }
+  .logo-sub { color: rgba(255,255,255,0.4); font-size: 12px; margin-top: 1px; }
+
+  .header h1 {
+    font-family: 'Noto Serif SC', serif;
+    color: white;
+    font-size: 22px;
+    line-height: 1.4;
+    margin-bottom: 6px;
+  }
+
+  .header p {
+    color: rgba(255,255,255,0.45);
+    font-size: 13px;
+  }
+
+  /* Body */
+  .body { padding: 28px 32px 32px; }
+
+  /* Section */
+  .section { margin-bottom: 28px; }
+
+  .section-title {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 13px; font-weight: 700;
+    color: #6B635C;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 12px;
+  }
+
+  .section-title-line {
+    flex: 1; height: 1px; background: #EDE9E3;
+  }
+
+  /* Step item */
+  .step {
+    display: flex; gap: 12px;
+    margin-bottom: 10px;
+  }
+
+  .step-num {
+    width: 24px; height: 24px; flex-shrink: 0;
+    background: #F59E0B;
+    color: white;
+    border-radius: 7px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 700;
+    margin-top: 1px;
+  }
+
+  .step-text {
+    flex: 1;
+    font-size: 14px;
+    color: #44403C;
+    line-height: 1.6;
+    padding-top: 2px;
+  }
+
+  .step-text strong { color: #1C1512; font-weight: 600; }
+  .step-text code {
+    background: #F4EFE6;
+    border: 1px solid #E5DDD3;
+    border-radius: 5px;
+    padding: 1px 7px;
+    font-size: 13px;
+    font-family: monospace;
+    color: #D97706;
+    font-weight: 600;
+  }
+
+  /* Info row */
+  .info-row {
+    display: flex; gap: 10px; align-items: flex-start;
+    padding: 12px 14px;
+    background: #F9F7F3;
+    border: 1px solid #EDE9E3;
+    border-radius: 12px;
+    margin-bottom: 8px;
+    font-size: 14px;
+    color: #44403C;
+    line-height: 1.6;
+  }
+
+  .info-row-icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+  .info-row strong { color: #1C1512; font-weight: 600; }
+
+  /* Rule cards */
+  .rule-grid {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 10px; margin-bottom: 0;
+  }
+
+  .rule-card {
+    padding: 14px;
+    border-radius: 12px;
+    border: 1px solid;
+  }
+
+  .rule-card-a {
+    background: #FFFBEB;
+    border-color: #FDE68A;
+  }
+
+  .rule-card-b {
+    background: #F5F3FF;
+    border-color: #DDD6FE;
+  }
+
+  .rule-card-icon { font-size: 20px; margin-bottom: 6px; }
+  .rule-card-title { font-size: 13px; font-weight: 700; margin-bottom: 6px; }
+  .rule-card-a .rule-card-title { color: #92400E; }
+  .rule-card-b .rule-card-title { color: #5B21B6; }
+  .rule-card-desc { font-size: 12px; color: #6B635C; line-height: 1.6; }
+
+  /* Notice */
+  .notice {
+    display: flex; gap: 10px;
+    padding: 14px 16px;
+    border-radius: 12px;
+    font-size: 13px;
+    line-height: 1.6;
+    margin-bottom: 10px;
+  }
+
+  .notice-amber {
+    background: #FFFBEB;
+    border: 1px solid #FDE68A;
+    color: #92400E;
+  }
+
+  .notice-blue {
+    background: #EFF6FF;
+    border: 1px solid #BFDBFE;
+    color: #1E3A8A;
+  }
+
+  .notice-icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+
+  /* URL button */
+  .url-btn {
+    display: flex; align-items: center; justify-content: space-between;
+    background: #1C1410;
+    color: white;
+    border-radius: 12px;
+    padding: 14px 18px;
+    text-decoration: none;
+    margin-bottom: 12px;
+    transition: opacity 0.15s;
+  }
+
+  .url-btn:hover { opacity: 0.85; }
+
+  .url-btn-left { display: flex; flex-direction: column; gap: 2px; }
+  .url-btn-label { font-size: 11px; color: rgba(255,255,255,0.4); }
+  .url-btn-url { font-size: 15px; font-weight: 700; }
+  .url-btn-arrow { font-size: 18px; color: #F59E0B; }
+
+  /* Guide link */
+  .guide-link {
+    display: flex; align-items: center; gap: 10px;
+    padding: 13px 16px;
+    background: #F4EFE6;
+    border: 1px solid #E5DDD3;
+    border-radius: 12px;
+    text-decoration: none;
+    color: #44403C;
+    font-size: 13px;
+    font-weight: 600;
+    transition: background 0.15s;
+  }
+
+  .guide-link:hover { background: #EDE9E3; }
+
+  /* Divider */
+  .divider { height: 1px; background: #EDE9E3; margin: 24px 0; }
+
+  /* Footer */
+  .footer {
+    text-align: center;
+    font-size: 11px;
+    color: #C7BFB5;
+    padding: 0 32px 28px;
+  }
+
+  @media (max-width: 480px) {
+    body { padding: 20px 12px 40px; }
+    .header { padding: 28px 20px 24px; }
+    .body { padding: 20px 20px 24px; }
+    .rule-grid { grid-template-columns: 1fr; }
+    .footer { padding: 0 20px 24px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="card">
+
+  <!-- Header -->
+  <div class="header">
+    <div class="logo-row">
+      <div class="logo-icon">
+        <span></span><span></span><span></span><span></span>
+      </div>
+      <div>
+        <div class="logo-text">OD 项目控制塔</div>
+        <div class="logo-sub">HR OD 团队内部工具</div>
+      </div>
+    </div>
+    <h1>欢迎使用，<br>这是你的快速入门指引</h1>
+    <p>5 分钟了解所有核心操作</p>
+  </div>
+
+  <div class="body">
+
+    <!-- 访问地址 -->
+    <div class="section">
+      <div class="section-title">
+        🔗 访问地址
+        <div class="section-title-line"></div>
+      </div>
+      <a class="url-btn" href="https://hrod-project.xyz" target="_blank">
+        <div class="url-btn-left">
+          <div class="url-btn-label">电脑 / 手机浏览器均可访问</div>
+          <div class="url-btn-url">hrod-project.xyz</div>
+        </div>
+        <div class="url-btn-arrow">→</div>
+      </a>
+      <div class="notice notice-amber">
+        <div class="notice-icon">⚡</div>
+        <div>服务器为免费节点，偶尔可能加载较慢——<strong>刷新一下</strong>即可，不影响数据安全。</div>
+      </div>
+      <div class="notice notice-blue">
+        <div class="notice-icon">📱</div>
+        <div>电脑和手机浏览器均支持，推荐使用 Chrome 或 Safari。</div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- 登录 -->
+    <div class="section">
+      <div class="section-title">
+        🔑 第一次登录
+        <div class="section-title-line"></div>
+      </div>
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-text">用<strong>公司邮箱</strong>登录，初始密码为 <code>1234</code></div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-text">登录后点击右上角<strong>头像</strong> → <strong>修改密码</strong>，立即改成只有自己知道的密码</div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-text">系统<strong>仅对团队内 6 位成员开放</strong>，账号已由管理员提前配置好，无需注册</div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- 项目规则 -->
+    <div class="section">
+      <div class="section-title">
+        📁 项目规则
+        <div class="section-title-line"></div>
+      </div>
+      <div class="rule-grid">
+        <div class="rule-card rule-card-a">
+          <div class="rule-card-icon">🔒</div>
+          <div class="rule-card-title">个人项目</div>
+          <div class="rule-card-desc">默认仅自己可见，其他人看不到。适合还在规划中、暂不公开的项目。</div>
+        </div>
+        <div class="rule-card rule-card-b">
+          <div class="rule-card-icon">👥</div>
+          <div class="rule-card-title">共享项目</div>
+          <div class="rule-card-desc">主动共享给指定成员后，对方可查看和编辑。被共享的项目有紫色「来自 TA」标签。</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 共享操作 -->
+    <div class="section" style="margin-top:12px">
+      <div class="section-title">
+        ↗️ 如何共享项目
+        <div class="section-title-line"></div>
+      </div>
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-text">鼠标悬停（或手机长按）项目卡片，点击<strong>「共享」</strong>按钮</div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-text">在弹窗中<strong>勾选</strong>要共享的成员，可多选</div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-text">点击<strong>「确认共享」</strong>，对方立即可见该项目</div>
+      </div>
+      <div class="info-row" style="margin-top:4px">
+        <div class="info-row-icon">ℹ️</div>
+        <div>共享按钮仅<strong>项目创建者</strong>可见。取消共享：重新打开共享弹窗，取消勾选即可。</div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- 详细指南 -->
+    <div class="section" style="margin-bottom:0">
+      <div class="section-title">
+        📖 需要更多帮助？
+        <div class="section-title-line"></div>
+      </div>
+      <a class="guide-link" href="/guide" target="_blank">
+        <span style="font-size:20px">📋</span>
+        <div style="flex:1">
+          <div style="font-size:14px;font-weight:700;color:#1C1512">查看详细使用指南</div>
+          <div style="font-size:12px;color:#A8A29E;font-weight:400;margin-top:1px">包含每个功能的图文说明和操作步骤</div>
+        </div>
+        <span style="color:#C7BFB5">→</span>
+      </a>
+    </div>
+
+  </div>
+
+  <div class="footer">
+    仅限内部团队使用 · 如有问题请联系管理员
+  </div>
+
+</div>
+
+</body>
+</html>
