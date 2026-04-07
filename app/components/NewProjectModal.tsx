@@ -122,10 +122,10 @@ export default function NewProjectModal({ open, onClose, onCreate }: Props) {
               负责人 <span className="text-rose-500">*</span>
             </label>
             <input type="text" value={owner} onChange={(e) => setOwner(e.target.value)}
-              placeholder="例：张雪" list="owner-list"
+              placeholder="例：daxing" list="owner-list"
               className={errors.owner ? INPUT_ERROR : INPUT_OK} />
             <datalist id="owner-list">
-              <option value="张雪" /><option value="李明" /><option value="王芳" />
+              <option value="daxing" /><option value="zhihong" /><option value="yawei" />
             </datalist>
             {errors.owner && <p className="mt-1 text-xs text-rose-500">{errors.owner}</p>}
           </div>
