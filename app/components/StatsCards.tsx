@@ -57,7 +57,7 @@ export default function StatsCards({ projects, subtasks }: Props) {
       label: '逾期及本周到期',
       value: weekSubtaskCount,
       unit: '项',
-      description: '已逾期或7天内到期',
+      description: '子任务已逾期或7天内到期',
       icon: CalendarClock,
       accentTop: 'bg-rose-500',
       iconBg: 'bg-rose-50',
